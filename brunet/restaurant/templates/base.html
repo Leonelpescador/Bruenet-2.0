@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurante Brunet</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{% url 'home' %}">Inicio</a></li>
+                <li><a href="{% url 'reservas' %}">Reservas</a></li>
+                <li><a href="{% url 'inventario' %}">Inventario</a></li>
+                <li><a href="{% url 'proveedores' %}">Proveedores</a></li>
+                <li><a href="{% url 'compras' %}">Compras</a></li>
+                <li><a href="{% url 'apertura_caja' %}">Apertura de Caja</a></li>
+                <li><a href="{% url 'cierre_caja' %}">Cierre de Caja</a></li>
+                <li><a href="{% url 'logout' %}">Salir</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+</body>
+</html>

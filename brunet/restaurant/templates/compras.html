@@ -1,0 +1,11 @@
+{% extends 'restaurant/base.html' %}
+
+{% block content %}
+<h1>Compras</h1>
+<a href="{% url 'crear_compra' %}">Registrar Nueva Compra</a>
+<ul>
+    {% for compra in compras %}
+    <li>{{ compra.proveedor }} - {{ compra.fecha_compra }} - {{ compra.total }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

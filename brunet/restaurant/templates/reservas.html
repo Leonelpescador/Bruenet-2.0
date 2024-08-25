@@ -1,0 +1,11 @@
+{% extends 'restaurant/base.html' %}
+
+{% block content %}
+<h1>Reservas</h1>
+<a href="{% url 'crear_reserva' %}">Crear Nueva Reserva</a>
+<ul>
+    {% for reserva in reservas %}
+    <li>{{ reserva.mesa }} - {{ reserva.fecha_reserva }} - {{ reserva.estado }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

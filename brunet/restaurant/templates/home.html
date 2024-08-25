@@ -1,0 +1,12 @@
+{% extends 'restaurant/base.html' %}
+
+{% block content %}
+<h1>Mesas del Restaurante</h1>
+<div class="mesas">
+    {% for mesa in mesas %}
+        <div class="mesa {% if mesa.estado == 'ocupada' %}ocupada{% else %}disponible{% endif %}">
+            Mesa {{ mesa.numero_mesa }} - {{ mesa.estado }}
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
