@@ -123,16 +123,15 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-STATIC_URL = '/static/'
+
 
 LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = 'login'
-
-
-#AUTH_USER_MODEL = 'restaurant.Usuario'
-
-
 STATIC_URL = '/static/'
 
-STATIC_URL = '/static/'
+
+AUTH_USER_MODEL = 'restaurant.Usuario'
+
+
+
 
