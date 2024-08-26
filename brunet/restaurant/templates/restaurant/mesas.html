@@ -1,0 +1,32 @@
+{% extends 'restaurant/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1>Gestión de Mesas</h1>
+    <a href="{% url 'crear_mesa' %}" class="btn btn-primary mb-3">Agregar Nueva Mesa</a>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Número de Mesa</th>
+                <th>Capacidad</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for mesa in mesas %}
+            <tr>
+                <td>{{ mesa.numero_mesa }}</td>
+                <td>{{ mesa.capacidad }}</td>
+                <td>{{ mesa.get_estado_display }}</td>
+                <td>
+                    <a href="{% url 'editar_mesa' mesa.id %}" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="{% url 'eliminar_mesa' mesa.id %}" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar esta mesa?');">Eliminar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

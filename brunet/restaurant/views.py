@@ -2,16 +2,16 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Caja, Pedido, Reserva, Inventario, Proveedor, Compra, Mesa
-from .forms import AperturaCajaForm, CierreCajaForm, PedidoForm, PagoForm, ReservaForm, CompraForm
+from .forms import AperturaCajaForm, CierreCajaForm, PedidoForm, PagoForm, ReservaForm, CompraForm , MesaForm
 from django.contrib.auth.models import User
 
-#@login_required
+@login_required
 def home(request):
     mesas = Mesa.objects.all()
     return render(request, 'restaurant/home.html', {'mesas': mesas})
 
 
-#@login_required
+@login_required
 def apertura_caja(request):
     if request.method == 'POST':
         form = AperturaCajaForm(request.POST)
@@ -117,6 +117,73 @@ def crear_compra(request):
     else:
         form = CompraForm()
     return render(request, 'restaurant/crear_compra.html', {'form': form})
+
+@login_required
+def lista_mesas(request):
+    mesas = Mesa.objects.all()
+    return render(request, 'restaurant/mesas.html', {'mesas': mesas})
+
+def crear_mesa(request):
+    if request.method == 'POST':
+        form = MesaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('lista_mesas')
+    else:
+        form = MesaForm()
+    return render(request, 'restaurant/crear_mesa.html', {'form': form})
+
+def editar_mesa(request, mesa_id):
+    mesa = get_object_or_404(Mesa, id=mesa_id)
+    if request.method == 'POST':
+        form = MesaForm(request.POST, instance=mesa)
+        if form.is_valid():
+            form.save()
+            return redirect('lista_mesas')
+    else:
+        form = MesaForm(instance=mesa)
+    return render(request, 'restaurant/editar_mesa.html', {'form': form})
+
+def eliminar_mesa(request, mesa_id):
+    mesa = get_object_or_404(Mesa, id=mesa_id)
+    mesa.delete()
+    return redirect('lista_mesas')
+
+#------
+from .models import Proveedor
+from .forms import ProveedorForm
+@login_required
+def crear_proveedor(request):
+    if request.method == 'POST':
+        form = ProveedorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Proveedor agregado con éxito.')
+            return redirect('proveedores')
+    else:
+        form = ProveedorForm()
+    return render(request, 'restaurant/crear_proveedor.html', {'form': form})
+
+def editar_proveedor(request, pk):
+    proveedor = get_object_or_404(Proveedor, pk=pk)
+    if request.method == 'POST':
+        form = ProveedorForm(request.POST, instance=proveedor)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Proveedor actualizado con éxito.')
+            return redirect('proveedores')
+    else:
+        form = ProveedorForm(instance=proveedor)
+    return render(request, 'restaurant/editar_proveedor.html', {'form': form})
+
+def eliminar_proveedor(request, pk):
+    proveedor = get_object_or_404(Proveedor, pk=pk)
+    if request.method == 'POST':
+        proveedor.delete()
+        messages.success(request, 'Proveedor eliminado con éxito.')
+        return redirect('proveedores')
+    return render(request, 'restaurant/eliminar_proveedor.html', {'proveedor': proveedor})
+
 
 
 #Logger
