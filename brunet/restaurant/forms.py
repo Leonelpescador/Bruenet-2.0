@@ -1,5 +1,5 @@
 from django import forms
-from .models import Caja, Pedido, Pago, Reserva, Compra , Mesa,  Proveedor
+from .models import Caja, Pedido, Pago, Reserva, Compra , Mesa,  Proveedor , Inventario
 
 class AperturaCajaForm(forms.ModelForm):
     class Meta:
@@ -47,4 +47,11 @@ class ProveedorForm(forms.ModelForm):
     class Meta:
         model = Proveedor
         fields = ['nombre_proveedor', 'contacto', 'telefono', 'email']
-       
+
+
+Inventario
+
+class InventarioForm(forms.ModelForm):
+    class Meta:
+        model = Inventario
+        fields = ['nombre_producto', 'cantidad_actual', 'cantidad_minima', 'unidad_medida']

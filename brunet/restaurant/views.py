@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Caja, Pedido, Reserva, Inventario, Proveedor, Compra, Mesa
-from .forms import AperturaCajaForm, CierreCajaForm, PedidoForm, PagoForm, ReservaForm, CompraForm , MesaForm
+from .forms import AperturaCajaForm, CierreCajaForm, PedidoForm, PagoForm, ReservaForm, CompraForm , MesaForm, InventarioForm
 from django.contrib.auth.models import User
 
 @login_required
@@ -95,6 +95,34 @@ def crear_reserva(request):
 def inventario(request):
     inventarios = Inventario.objects.all()
     return render(request, 'restaurant/inventario.html', {'inventarios': inventarios})
+
+def crear_inventario(request):
+    if request.method == 'POST':
+        form = InventarioForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('inventario')
+    else:
+        form = InventarioForm()
+    return render(request, 'restaurant/crear_inventario.html', {'form': form})
+
+def editar_inventario(request, pk):
+    inventario = get_object_or_404(Inventario, pk=pk)
+    if request.method == 'POST':
+        form = InventarioForm(request.POST, instance=inventario)
+        if form.is_valid():
+            form.save()
+            return redirect('inventario')
+    else:
+        form = InventarioForm(instance=inventario)
+    return render(request, 'restaurant/editar_inventario.html', {'form': form})
+
+def eliminar_inventario(request, pk):
+    inventario = get_object_or_404(Inventario, pk=pk)
+    if request.method == 'POST':
+        inventario.delete()
+        return redirect('inventario')
+    return render(request, 'restaurant/eliminar_inventario.html', {'inventario': inventario})
 
 @login_required
 def proveedores(request):
