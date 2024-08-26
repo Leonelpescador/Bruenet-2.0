@@ -3,25 +3,29 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Caja, Pedido, Reserva, Inventario, Proveedor, Compra, Mesa
 from .forms import AperturaCajaForm, CierreCajaForm, PedidoForm, PagoForm, ReservaForm, CompraForm
+from django.contrib.auth.models import User
 
-@login_required
+#@login_required
 def home(request):
     mesas = Mesa.objects.all()
     return render(request, 'restaurant/home.html', {'mesas': mesas})
 
-@login_required
+
+#@login_required
 def apertura_caja(request):
     if request.method == 'POST':
         form = AperturaCajaForm(request.POST)
         if form.is_valid():
             caja = form.save(commit=False)
-            caja.usuario = request.user
+            caja.usuario = request.user  
             caja.save()
             messages.success(request, 'Caja abierta con éxito.')
             return redirect('home')
     else:
         form = AperturaCajaForm()
     return render(request, 'restaurant/apertura_caja.html', {'form': form})
+
+
 
 @login_required
 def cierre_caja(request):
