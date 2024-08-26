@@ -113,3 +113,11 @@ def crear_compra(request):
     else:
         form = CompraForm()
     return render(request, 'restaurant/crear_compra.html', {'form': form})
+
+
+#Logger
+
+from django.contrib.auth import views as auth_views
+class CustomLoginView(auth_views.LoginView):
+    template_name = 'restaurant/login.html'  # Tu propia plantilla de inicio de sesión
+#----------------------Logger-------------------------------------------------#
