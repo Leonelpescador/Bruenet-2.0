@@ -1,23 +1,29 @@
 {% extends 'restaurant/base.html' %}
 
 {% block content %}
-<h1>Proveedores</h1>
+<div class="container">
+    <h1 class="my-4">Proveedores</h1>
+    
+    <div class="mb-3">
+        <a href="{% url 'crear_proveedor' %}" class="btn btn-primary">Agregar Proveedor</a>
+    </div>
 
-
-<a href="{% url 'crear_proveedor' %}" class="btn btn-primary">Agregar Proveedor</a>
-
-
-<ul>
-    {% for proveedor in proveedores %}
-    <li>
-        {{ proveedor.nombre_proveedor }} - {{ proveedor.telefono }}
-        
-        <a href="{% url 'editar_proveedor' proveedor.pk %}" class="btn btn-secondary">Editar</a>
-        <form method="post" action="{% url 'eliminar_proveedor' proveedor.pk %}" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Eliminar</button>
-        </form>
-    </li>
-    {% endfor %}
-</ul>
+    <ul class="list-group">
+        {% for proveedor in proveedores %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <strong>{{ proveedor.nombre_proveedor }}</strong><br>
+                <small>Teléfono: {{ proveedor.telefono }}</small>
+            </div>
+            <div>
+                <a href="{% url 'editar_proveedor' proveedor.pk %}" class="btn btn-sm btn-warning mr-2">Editar</a>
+                <form method="post" action="{% url 'eliminar_proveedor' proveedor.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar este proveedor?');">Eliminar</button>
+                </form>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
 {% endblock %}
