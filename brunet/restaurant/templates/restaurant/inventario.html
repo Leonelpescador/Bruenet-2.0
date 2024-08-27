@@ -1,15 +1,16 @@
 {% extends 'restaurant/base.html' %}
-
 {% block content %}
-<h1>Inventario</h1>
-<a href="{% url 'crear_inventario' %}">Agregar Producto</a>
-<ul>
-    {% for item in inventarios %}
-    <li>
-        {{ item.nombre_producto }} - {{ item.cantidad_actual }} {{ item.unidad_medida }}
-        <a href="{% url 'editar_inventario' item.pk %}">Editar</a> |
-        <a href="{% url 'eliminar_inventario' item.pk %}">Eliminar</a>
-    </li>
-    {% endfor %}
-</ul>
+<div class="container">
+    <h1>Inventario</h1>
+    <a href="{% url 'crear_inventario' %}" class="btn btn-primary">Agregar Producto</a>
+    <ul>
+        {% for item in inventarios %}
+        <li>
+            <span>{{ item.nombre_producto }} - {{ item.cantidad_actual }} {{ item.unidad_medida }}</span>
+            <a href="{% url 'editar_inventario' item.pk %}" class="btn btn-warning">Editar</a>
+            <a href="{% url 'eliminar_inventario' item.pk %}" class="btn btn-danger">Eliminar</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
 {% endblock %}

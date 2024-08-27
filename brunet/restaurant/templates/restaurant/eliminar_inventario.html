@@ -1,11 +1,72 @@
 {% extends 'restaurant/base.html' %}
 
 {% block content %}
-<h1>Eliminar Producto del Inventario</h1>
-<p>¿Estás seguro que deseas eliminar "{{ inventario.nombre_producto }}"?</p>
-<form method="post">
-    {% csrf_token %}
-    <button type="submit">Eliminar</button>
-    <a href="{% url 'inventario' %}">Cancelar</a>
-</form>
+<style>
+    .eliminar-inventario-container {
+        margin: 20px auto;
+        max-width: 600px;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+    
+    .eliminar-inventario-container h1 {
+        margin-bottom: 20px;
+        color: #dc3545;
+    }
+    
+    .eliminar-inventario-container p {
+        margin-bottom: 20px;
+        font-size: 18px;
+        color: #333;
+    }
+    
+    .eliminar-inventario-container form {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+    
+    .eliminar-inventario-container button[type="submit"] {
+        padding: 10px 20px;
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+    }
+    
+    .eliminar-inventario-container button[type="submit"]:hover {
+        background-color: #c82333;
+    }
+    
+    .eliminar-inventario-container a {
+        padding: 10px 20px;
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+    }
+    
+    .eliminar-inventario-container a:hover {
+        background-color: #5a6268;
+    }
+    
+</style>
+<div class="eliminar-inventario-container">
+    <h1>Eliminar Producto del Inventario</h1>
+    <p>¿Estás seguro que deseas eliminar "{{ inventario.nombre_producto }}"?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit">Eliminar</button>
+        <a href="{% url 'inventario' %}">Cancelar</a>
+    </form>
+</div>
 {% endblock %}

@@ -1,11 +1,17 @@
 {% extends 'restaurant/base.html' %}
 
 {% block content %}
-<h1>Compras</h1>
-<a href="{% url 'crear_compra' %}">Registrar Nueva Compra</a>
-<ul>
-    {% for compra in compras %}
-    <li>{{ compra.proveedor }} - {{ compra.fecha_compra }} - {{ compra.total }}</li>
-    {% endfor %}
-</ul>
+<div class="compras-container">
+    <h1>Compras</h1>
+    <a href="{% url 'crear_compra' %}" class="btn btn-primary">Registrar Nueva Compra</a>
+    <ul class="compras-list">
+        {% for compra in compras %}
+        <li class="compra-item">
+            <span>{{ compra.proveedor }}</span>
+            <span>{{ compra.fecha_compra }}</span>
+            <span>${{ compra.total }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
 {% endblock %}
