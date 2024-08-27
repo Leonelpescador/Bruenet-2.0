@@ -132,17 +132,31 @@ class DetalleCompra(models.Model):
         self.subtotal = self.cantidad * self.precio_unitario
         super().save(*args, **kwargs)
 
+#aca modifique caja
 class Caja(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     apertura = models.DateTimeField(auto_now_add=True)
     cierre = models.DateTimeField(blank=True, null=True)
     total_inicial = models.DecimalField(max_digits=8, decimal_places=2)
     total_final = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    estado = models.CharField(max_length=10, default='abierta')  # Nuevo campo
 
     def cerrar_caja(self, total_final):
         self.cierre = timezone.now()
         self.total_final = total_final
+        self.estado = 'cerrada'  # Actualizar el estado de la caja
         self.save()
 
     def __str__(self):
         return f'Caja {self.id} - {self.usuario.username}'
+
+class TransaccionCaja(models.Model):
+    caja = models.ForeignKey(Caja, on_delete=models.CASCADE)
+    tipo = models.CharField(max_length=10, choices=[('ingreso', 'Ingreso'), ('egreso', 'Egreso')])
+    monto = models.DecimalField(max_digits=8, decimal_places=2)
+    descripcion = models.TextField(blank=True, null=True)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Transacción {self.tipo} - {self.monto}'
+#termina modificacion de caja 

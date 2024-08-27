@@ -1,0 +1,21 @@
+{% extends "restaurant/base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Registrar Pago</h1>
+    <p>Pedido: {{ pedido.id }}</p>
+    <p>Total a Pagar: {{ pedido.total }}</p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="metodo_pago" class="form-label">Método de Pago:</label>
+            <select name="metodo_pago" class="form-control" required>
+                <option value="efectivo">Efectivo</option>
+                <option value="tarjeta">Tarjeta</option>
+                <option value="transferencia">Transferencia</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Registrar Pago</button>
+    </form>
+</div>
+{% endblock %}

@@ -231,7 +231,7 @@ def crear_mesa(request):
         form = MesaForm()
     return render(request, 'restaurant/crear_mesa.html', {'form': form})
 
-def editar_mesa(request, pk):  # Cambiar 'mesa_id' por 'pk'
+def editar_mesa(request, pk):  
     mesa = get_object_or_404(Mesa, id=pk)
     if request.method == 'POST':
         form = MesaForm(request.POST, instance=mesa)
@@ -272,3 +272,66 @@ def crear_pedido(request, mesa_id):
     else:
         form = PedidoForm()
     return render(request, 'restaurant/crear_pedido.html', {'form': form})
+
+
+
+#flujo de caja. 
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Caja, Pedido, Pago, TransaccionCaja
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+
+@login_required
+def abrir_caja(request):
+    if request.method == 'POST':
+        total_inicial = request.POST.get('total_inicial')
+        caja = Caja(usuario=request.user, total_inicial=total_inicial)
+        caja.save()
+        return redirect('consulta_caja', caja_id=caja.id)
+    return render(request, 'cajas/abrir_caja.html')
+
+@login_required
+def cerrar_caja(request, caja_id):
+    caja = get_object_or_404(Caja, id=caja_id)
+    if caja.estado == 'cerrada':
+        return redirect('consulta_caja', caja_id=caja.id)
+    
+    if request.method == 'POST':
+        total_final = request.POST.get('total_final')
+        caja.cerrar_caja(total_final)
+        return redirect('consulta_caja', caja_id=caja.id)
+    return render(request, 'cajas/cerrar_caja.html', {'caja': caja})
+
+@login_required
+def registrar_pago(request, pedido_id):
+    caja_abierta = Caja.objects.filter(estado='abierta').first()
+    if not caja_abierta:
+        return redirect('abrir_caja')
+    
+    pedido = get_object_or_404(Pedido, id=pedido_id, estado='pendiente')
+    if request.method == 'POST':
+        metodo_pago = request.POST.get('metodo_pago')
+        pago = Pago(pedido=pedido, metodo_pago=metodo_pago)
+        pago.save()
+        pedido.estado = 'pagado'
+        pedido.save()
+
+        # Registrar ingreso en la caja
+        transaccion = TransaccionCaja(
+            caja=caja_abierta,
+            tipo='ingreso',
+            monto=pago.monto,
+            descripcion=f'Pago de pedido {pedido.id}'
+        )
+        transaccion.save()
+
+        return redirect('consulta_caja', caja_id=caja_abierta.id)
+    
+    return render(request, 'cajas/registrar_pago.html', {'pedido': pedido, 'caja': caja_abierta})
+
+@login_required
+def consulta_caja(request, caja_id):
+    caja = get_object_or_404(Caja, id=caja_id)
+    transacciones = TransaccionCaja.objects.filter(caja=caja)
+    return render(request, 'cajas/consulta_caja.html', {'caja': caja, 'transacciones': transacciones})

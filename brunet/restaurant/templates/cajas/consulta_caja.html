@@ -1,0 +1,16 @@
+{% extends "restaurant/base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Consulta de Caja</h1>
+    <p>Total Inicial: {{ caja.total_inicial }}</p>
+    <p>Total Final: {{ caja.total_final }}</p>
+    <p>Estado: {% if caja.estado == 'cerrada' %} Cerrada {% else %} Abierta {% endif %}</p>
+    <h2>Transacciones</h2>
+    <ul>
+        {% for transaccion in transacciones %}
+        <li>{{ transaccion.tipo }} - {{ transaccion.monto }} - {{ transaccion.descripcion }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
