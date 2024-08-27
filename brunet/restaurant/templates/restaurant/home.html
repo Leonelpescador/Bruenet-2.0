@@ -2,10 +2,68 @@
 
 {% block content %}
 <h1>Mesas del Restaurante</h1>
+<title>Mesas del Restaurante</title>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f0f0f5;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    h1 {
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    .mesas {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+    }
+
+    .mesa {
+        width: 150px;
+        height: 150px;
+        background-color: green;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    .mesa.ocupada {
+        background-color: red;
+    }
+
+    .mesa.reservada {
+        background-color: grey;
+    }
+</style>
 <div class="mesas">
     {% for mesa in mesas %}
-        <div class="mesa {% if mesa.estado == 'ocupada' %}ocupada{% else %}disponible{% endif %}">
-            Mesa {{ mesa.numero_mesa }} - {{ mesa.estado }}
+    <div class="mesa 
+    {% if mesa.estado == 'ocupada' %}
+        ocupada
+    {% elif mesa.estado == 'reservada' %}
+        reservada
+    {% else %}
+        disponible
+    {% endif %}">
+            Mesa {{ mesa.numero_mesa }}  {{ mesa.estado }}  capacidad {{mesa.capacidad}}
+            <div class="menu-desplegable">
+                <a href="{% url 'editar_mesa' mesa.id %}">Cambiar estado</a>
+                <a href="{% url 'crear_reserva' mesa.id %}">Crear reserva</a>
+                <a href="{% url 'crear_pedido' mesa.id %}">Crear pedido</a>
+            </div>
         </div>
     {% endfor %}
 </div>

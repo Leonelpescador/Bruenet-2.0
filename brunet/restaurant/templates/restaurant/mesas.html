@@ -2,9 +2,17 @@
 
 {% block content %}
 <div class="container">
-    <h1>Gestión de Mesas</h1>
+    <h1>Mesas del Restaurante</h1>
     <a href="{% url 'crear_mesa' %}" class="btn btn-primary mb-3">Agregar Nueva Mesa</a>
-    
+
+    <div class="mesas mb-3">
+        {% for mesa in mesas %}
+            <div class="mesa {% if mesa.estado == 'ocupada' %}ocupada{% elif mesa.estado == 'reservada' %}reservada{% else %}disponible{% endif %}">
+                <a href="{% url 'crear_reserva' mesa.id %}">Mesa {{ mesa.numero_mesa }}</a> - {{ mesa.estado }} - Capacidad: {{ mesa.capacidad }}
+            </div>
+        {% endfor %}
+    </div>
+
     <table class="table table-striped">
         <thead>
             <tr>
@@ -30,3 +38,4 @@
     </table>
 </div>
 {% endblock %}
+

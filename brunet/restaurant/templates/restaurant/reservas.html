@@ -2,7 +2,7 @@
 
 {% block content %}
 <h1>Reservas</h1>
-<a href="{% url 'crear_reserva' %}">Crear Nueva Reserva</a>
+<a href="{% url 'crear_reserva' mesa.id %}">Crear Nueva Reserva</a>
 <ul>
     {% for reserva in reservas %}
     <li>{{ reserva.mesa }} - {{ reserva.fecha_reserva }} - {{ reserva.estado }}</li>

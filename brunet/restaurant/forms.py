@@ -40,7 +40,6 @@ class MesaForm(forms.ModelForm):
         model = Mesa
         fields = ['numero_mesa', 'capacidad', 'estado']
         
- 
 
 
 class ProveedorForm(forms.ModelForm):
@@ -55,3 +54,19 @@ class InventarioForm(forms.ModelForm):
     class Meta:
         model = Inventario
         fields = ['nombre_producto', 'cantidad_actual', 'cantidad_minima', 'unidad_medida']
+
+
+class MesaForm(forms.ModelForm):
+    class Meta:
+        model = Mesa
+        fields = ['numero_mesa', 'capacidad', 'estado']
+
+class ReservaForm(forms.ModelForm):
+    class Meta:
+        model = Reserva
+        fields = ['nombre_cliente', 'telefono_cliente', 'fecha_reserva']
+
+class PedidoForm(forms.ModelForm):
+    class Meta:
+        model = Pedido
+        fields = ['usuario', 'mesa', 'estado']

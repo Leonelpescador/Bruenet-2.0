@@ -23,8 +23,12 @@ urlpatterns = [
     path('compras/', views.compras, name='compras'),
     path('compra/crear/', views.crear_compra, name='crear_compra'),
     path('login/', views.CustomLoginView.as_view(), name='login'), 
-    path('mesas/', lista_mesas, name='lista_mesas'),
-    path('mesas/crear/', crear_mesa, name='crear_mesa'),
-    path('mesas/editar/<int:mesa_id>/', editar_mesa, name='editar_mesa'),
-    path('mesas/eliminar/<int:mesa_id>/', eliminar_mesa, name='eliminar_mesa'),
+    path('', views.home, name='home'),
+    path('mesas/crear/', views.crear_mesa, name='crear_mesa'),
+    path('mesas/', views.lista_mesas, name='lista_mesas'),
+    path('mesas/eliminar/<int:mesa_id>/', views.eliminar_mesa, name='eliminar_mesa'),
+    path('mesas/editar/<int:pk>/', views.editar_mesa, name='editar_mesa'),
+    path('mesas/crear-reserva/<int:mesa_id>/', views.crear_reserva, name='crear_reserva'),
+    path('mesas/crear-pedido/<int:mesa_id>/', views.crear_pedido, name='crear_pedido'),
+    #####-------------------
 ]

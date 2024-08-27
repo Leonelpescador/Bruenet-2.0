@@ -5,6 +5,8 @@ from .models import Caja, Pedido, Reserva, Inventario, Proveedor, Compra, Mesa
 from .forms import AperturaCajaForm, CierreCajaForm, PedidoForm, PagoForm, ReservaForm, CompraForm , MesaForm, InventarioForm
 from django.contrib.auth.models import User
 
+from django.shortcuts import render, redirect
+
 @login_required
 def home(request):
     mesas = Mesa.objects.all()
@@ -77,19 +79,7 @@ def reservas(request):
     reservas = Reserva.objects.all()
     return render(request, 'restaurant/reservas.html', {'reservas': reservas})
 
-@login_required
-def crear_reserva(request):
-    if request.method == 'POST':
-        form = ReservaForm(request.POST)
-        if form.is_valid():
-            reserva = form.save(commit=False)
-            reserva.usuario = request.user
-            reserva.save()
-            messages.success(request, 'Reserva creada con éxito.')
-            return redirect('reservas')
-    else:
-        form = ReservaForm()
-    return render(request, 'restaurant/crear_reserva.html', {'form': form})
+
 
 @login_required
 def inventario(request):
@@ -220,3 +210,65 @@ from django.contrib.auth import views as auth_views
 class CustomLoginView(auth_views.LoginView):
     template_name = 'restaurant/login.html'  # Tu propia plantilla de inicio de sesión
 #----------------------Logger-------------------------------------------------#
+#---------------funsion de desplegar en mesa ----------#
+
+def home(request):
+    mesas = Mesa.objects.all()
+    return render(request, 'restaurant/home.html', {'mesas': mesas})
+
+@login_required
+def lista_mesas(request):
+    mesas = Mesa.objects.all()
+    return render(request, 'restaurant/mesas.html', {'mesas': mesas})
+
+def crear_mesa(request):
+    if request.method == 'POST':
+        form = MesaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('lista_mesas')
+    else:
+        form = MesaForm()
+    return render(request, 'restaurant/crear_mesa.html', {'form': form})
+
+def editar_mesa(request, pk):  # Cambiar 'mesa_id' por 'pk'
+    mesa = get_object_or_404(Mesa, id=pk)
+    if request.method == 'POST':
+        form = MesaForm(request.POST, instance=mesa)
+        if form.is_valid():
+            form.save()
+            return redirect('lista_mesas')
+    else:
+        form = MesaForm(instance=mesa)
+    return render(request, 'restaurant/editar_mesa.html', {'form': form})
+
+def eliminar_mesa(request, mesa_id):
+    mesa = get_object_or_404(Mesa, id=mesa_id)
+    mesa.delete()
+    return redirect('lista_mesas')
+
+def crear_reserva(request, mesa_id):
+    mesa = get_object_or_404(Mesa, pk=mesa_id)
+    if request.method == 'POST':
+        form = ReservaForm(request.POST)
+        if form.is_valid():
+            reserva = form.save(commit=False)
+            reserva.mesa = mesa
+            reserva.save()
+            return redirect('lista_mesas')
+    else:
+        form = ReservaForm()
+    return render(request, 'restaurant/crear_reserva.html', {'form': form})
+
+def crear_pedido(request, mesa_id):
+    mesa = get_object_or_404(Mesa, pk=mesa_id)
+    if request.method == 'POST':
+        form = PedidoForm(request.POST)
+        if form.is_valid():
+            pedido = form.save(commit=False)
+            pedido.mesa = mesa
+            pedido.save()
+            return redirect('lista_mesas')
+    else:
+        form = PedidoForm()
+    return render(request, 'restaurant/crear_pedido.html', {'form': form})
