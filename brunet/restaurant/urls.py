@@ -85,5 +85,6 @@ urlpatterns =[
     path('menu/listar/', views.listar_menu, name='listar_menu'),
     path('menu/crear/', views.crear_menu, name='crear_menu'),
     path('menu/editar/<int:menu_id>/', views.editar_menu, name='editar_menu'),
-    path('menu/eliminar/<int:menu_id>/', views.eliminar_menu, name='eliminar_menu')
+    path('menu/eliminar/<int:menu_id>/', views.eliminar_menu, name='eliminar_menu'),
+    path('menu/cambiar-disponibilidad/<int:menu_id>/', views.cambiar_disponibilidad_menu, name='cambiar_disponibilidad_menu'),
     ]

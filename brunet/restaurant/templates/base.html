@@ -109,55 +109,65 @@
     </header>
     <main>
         {% block content %}
+        {% if messages %}
+            <div class="container mt-4">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
         <div class="container">
             <style>
                 .container {
-                    background-color: #f7f9fc; /* Fondo claro */
-                    border: 1px solid #d1dbe5; /* Borde sutil */
-                    border-radius: 8px; /* Bordes redondeados */
-                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra para efecto elevado */
-                    padding: 20px; /* Espacio interno */
-                    margin: 20px auto; /* Centrado y margen externo */
-                    max-width: 1200px; /* Ancho máximo para centrado */
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fuente similar a Excel */
+                    background-color: #f7f9fc; 
+                    border: 1px solid #d1dbe5; 
+                    border-radius: 8px; 
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+                    padding: 20px; 
+                    margin: 20px auto; 
+                    max-width: 1200px; 
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /
                 }
                 
                 .container h1 {
-                    color: #2c3e50; /* Color de título en azul oscuro */
-                    font-weight: 600; /* Título más prominente */
-                    text-align: center; /* Centrar el título */
-                    margin-bottom: 20px; /* Separación con el contenido */
+                    color: #2c3e50; 
+                    font-weight: 600; 
+                    text-align: center; 
+                    margin-bottom: 20px; 
                 }
                 
                 .table {
                     width: 100%;
-                    border-collapse: collapse; /* Bordes de las celdas colapsados */
+                    border-collapse: collapse; 
                     margin-top: 20px;
                 }
                 
                 .table th, .table td {
-                    border: 1px solid #d1dbe5; /* Bordes sutiles */
+                    border: 1px solid #d1dbe5; 
                     padding: 10px;
                     text-align: left;
                     font-size: 14px;
                 }
                 
                 .table th {
-                    background-color: #eaf1f7; /* Fondo más claro para encabezados */
-                    color: #2c3e50; /* Texto en azul oscuro */
+                    background-color: #eaf1f7; 
+                    color: #2c3e50; 
                     font-weight: bold;
                 }
                 
                 .table tr:nth-child(even) {
-                    background-color: #f4f7fc; /* Color de fondo alterno para filas pares */
+                    background-color: #f4f7fc; 
                 }
                 
                 .table tr:hover {
-                    background-color: #e0ecf8; /* Efecto de hover */
+                    background-color: #e0ecf8; 
                 }
                 
                 .btn {
-                    background-color: #3498db; /* Color azul similar a Excel */
+                    background-color: #3498db; 
                     color: #fff;
                     padding: 10px 20px;
                     border-radius: 5px;
@@ -171,13 +181,12 @@
                 }
                 
                 .btn:hover {
-                    background-color: #2980b9; /* Azul más oscuro al pasar el mouse */
+                    background-color: #2980b9; 
                 }
             </style>
         </div>
-        {% endblock %}
+    {% endblock %}
     </main>
     <script src="{% static 'js/mesas.js' %}"></script>
 </body>
 </html>
-<!---->

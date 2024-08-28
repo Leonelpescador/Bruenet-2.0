@@ -420,8 +420,13 @@ from .models import Menu
 
 @login_required
 def listar_menu(request):
-    menu_items = Menu.objects.all()
-    return render(request, 'menu/listar_menu.html', {'menu_items': menu_items})
+    menu_items_disponibles = Menu.objects.filter(disponible=True)
+    menu_items_no_disponibles = Menu.objects.filter(disponible=False)
+    return render(request, 'menu/listar_menu.html', {
+        'menu_items_disponibles': menu_items_disponibles,
+        'menu_items_no_disponibles': menu_items_no_disponibles
+    })
+
 @login_required
 def crear_menu(request):
     if request.method == 'POST':
@@ -429,10 +434,10 @@ def crear_menu(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'El menú ha sido guardado con éxito.')
-            return redirect('cliente')  
+            return redirect('listar_menu')  
     else:
         form = MenuForm()
-    return render(request, 'menu/listar_menu.html', {'form': form})
+    return render(request, 'menu/crear_menu.html', {'form': form})
 
 @login_required
 def editar_menu(request, menu_id):
@@ -446,11 +451,20 @@ def editar_menu(request, menu_id):
     else:
         form = MenuForm(instance=menu_item)
     return render(request, 'menu/editar_menu.html', {'form': form})
+
 @login_required
 def eliminar_menu(request, menu_id):
     menu_item = get_object_or_404(Menu, id=menu_id)
     if request.method == 'POST':
         menu_item.delete()
         messages.success(request, 'Plato eliminado con éxito.')
-        return redirect('listar_menu')
+        return redirect('listar_menu')  
     return render(request, 'menu/eliminar_menu.html', {'menu': menu_item})
+
+@login_required
+def cambiar_disponibilidad_menu(request, menu_id):
+    menu_item = get_object_or_404(Menu, id=menu_id)
+    menu_item.disponible = not menu_item.disponible
+    menu_item.save()
+    messages.success(request, 'La disponibilidad del menú ha sido actualizada.')
+    return redirect('listar_menu')
