@@ -107,10 +107,24 @@ class Pago(models.Model):
         super().save(*args, **kwargs)
 
 class Inventario(models.Model):
+    UNIDAD_MEDIDA_CHOICES = [
+        ('KG', 'Kilogramos'),
+        ('G', 'Gramos'),
+        ('L', 'Litros'),
+        ('Ud', 'Unidad'),
+    ]
+
     nombre_producto = models.CharField(max_length=100)
     cantidad_actual = models.IntegerField()
     cantidad_minima = models.IntegerField()
-    unidad_medida = models.CharField(max_length=10)
+    unidad_medida = models.CharField(
+        max_length=2,
+        choices=UNIDAD_MEDIDA_CHOICES,
+        default='Ud'
+    )
+
+    def __str__(self):
+        return f'{self.nombre_producto} ({self.unidad_medida})'
 
 class Proveedor(models.Model):
     nombre_proveedor = models.CharField(max_length=100)

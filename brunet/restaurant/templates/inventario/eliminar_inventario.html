@@ -1,4 +1,4 @@
-{% extends 'restaurant/base.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
 <style>
@@ -14,59 +14,55 @@
     
     .eliminar-inventario-container h1 {
         margin-bottom: 20px;
-        color: #dc3545;
+        color: #333;
     }
     
     .eliminar-inventario-container p {
         margin-bottom: 20px;
-        font-size: 18px;
-        color: #333;
+        color: #d9534f; /* Texto en rojo para indicar advertencia */
     }
     
     .eliminar-inventario-container form {
         display: flex;
         justify-content: center;
-        gap: 20px;
+        gap: 10px;
     }
     
     .eliminar-inventario-container button[type="submit"] {
-        padding: 10px 20px;
-        background-color: #dc3545;
+        background-color: #d9534f;
         color: white;
         border: none;
+        padding: 10px 20px;
         border-radius: 5px;
         cursor: pointer;
-        font-size: 16px;
         transition: background-color 0.3s ease;
     }
     
     .eliminar-inventario-container button[type="submit"]:hover {
-        background-color: #c82333;
+        background-color: #c9302c;
     }
     
     .eliminar-inventario-container a {
-        padding: 10px 20px;
-        background-color: #6c757d;
+        background-color: #5bc0de;
         color: white;
-        border: none;
+        padding: 10px 20px;
         border-radius: 5px;
         text-decoration: none;
-        font-size: 16px;
         transition: background-color 0.3s ease;
     }
     
     .eliminar-inventario-container a:hover {
-        background-color: #5a6268;
+        background-color: #31b0d5;
     }
-    
 </style>
+
 <div class="eliminar-inventario-container">
     <h1>Eliminar Producto del Inventario</h1>
     <p>¿Estás seguro que deseas eliminar "{{ inventario.nombre_producto }}"?</p>
     <form method="post">
         {% csrf_token %}
-        <button type="submit">Eliminar</button>
-        <a href="{% url 'inventario' %}">Cancelar</a>
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a href="{% url 'inventario' %}" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
 {% endblock %}

@@ -1,4 +1,4 @@
-{% extends 'restaurant/base.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
 <style>
@@ -25,7 +25,6 @@
     
     .inventario-form input[type="text"],
     .inventario-form input[type="number"],
-    .inventario-form input[type="email"],
     .inventario-form select,
     .inventario-form textarea {
         width: 100%;
@@ -56,7 +55,11 @@
 
     <form method="post" class="inventario-form">
         {% csrf_token %}
-        {{ form.as_p }}
+        {{ form.nombre_producto.label_tag }} {{ form.nombre_producto }}
+        {{ form.cantidad_actual.label_tag }} {{ form.cantidad_actual }}
+        {{ form.cantidad_minima.label_tag }} {{ form.cantidad_minima }}
+        <label for="{{ form.unidad_medida.id_for_label }}">Unidad de Medida</label>
+        {{ form.unidad_medida }}
         <button type="submit" class="btn btn-primary">Guardar</button>
     </form>
 </div>
