@@ -226,9 +226,11 @@
                     background-color: #2980b9; 
                 }
             </style>
-        </div>
-    {% endblock %}
-    </main>
-    <script src="{% static 'js/mesas.js' %}"></script>
-</body>
-</html>
+            {% endblock %}
+        </main>
+        
+        {% block extra_js %}
+        <script src="{% static 'js/mesas.js' %}"></script>
+        {% endblock %}
+        </body>
+        </html>

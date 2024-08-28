@@ -68,12 +68,12 @@ urlpatterns =[
     path('compra/eliminar/<int:compra_id>/', views.eliminar_compra, name='eliminar_compra'),
     
     # Mesa 
-    path('mesas/crear/', views.crear_mesa, name='crear_mesa'),
-    path('mesas/', views.lista_mesas, name='lista_mesas'),
-    path('mesas/eliminar/<int:mesa_id>/', views.eliminar_mesa, name='eliminar_mesa'),
-    path('mesas/editar/<int:pk>/', views.editar_mesa, name='editar_mesa'),
-    path('mesas/crear-reserva/<int:mesa_id>/', views.crear_reserva, name='crear_reserva'),
-    path('mesas/crear-pedido/<int:mesa_id>/', views.crear_pedido, name='crear_pedido'),
+    path('mesa/crear/', views.crear_mesa, name='crear_mesa'),
+    path('mesa/', views.lista_mesas, name='lista_mesas'),
+    path('mesa/eliminar/<int:mesa_id>/', views.eliminar_mesa, name='eliminar_mesa'),
+    path('mesa/editar/<int:pk>/', views.editar_mesa, name='editar_mesa'),
+    path('mesa/crear-reserva/<int:mesa_id>/', views.crear_reserva, name='crear_reserva'),
+    path('mesa/crear-pedido/<int:mesa_id>/', views.crear_pedido, name='crear_pedido'),
     
     
     # Caja 

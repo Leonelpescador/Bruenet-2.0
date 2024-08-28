@@ -38,6 +38,7 @@
         text-align: center;
         padding: 10px;
         box-sizing: border-box;
+        position: relative;
     }
 
     .mesa.ocupada {
@@ -46,6 +47,33 @@
 
     .mesa.reservada {
         background-color: grey;
+    }
+
+    .menu-desplegable {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background-color: white;
+        border: 1px solid #ccc;
+        padding: 10px;
+        border-radius: 5px;
+        z-index: 1000;
+    }
+
+    .mesa:hover .menu-desplegable {
+        display: block;
+    }
+
+    .menu-desplegable a {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+        text-decoration: none;
+    }
+
+    .menu-desplegable a:hover {
+        color: #007bff;
     }
 </style>
 <div class="mesas">
@@ -58,18 +86,22 @@
     {% else %}
         disponible
     {% endif %}">
-            Mesa {{ mesa.numero_mesa }}  {{ mesa.estado }}  capacidad {{mesa.capacidad}}
-            <div class="menu-desplegable">
-                <a href="{% url 'editar_mesa' mesa.id %}">Cambiar estado</a>
-                <a href="{% url 'crear_reserva' mesa.id %}">Crear reserva</a>
-                <a href="{% url 'crear_pedido' mesa.id %}">Crear pedido</a>
-            </div>
+        Mesa {{ mesa.numero_mesa }}<br>Estado: {{ mesa.estado }}<br>Capacidad: {{ mesa.capacidad }}
+        <div class="menu-desplegable">
+            <a href="{% url 'editar_mesa' mesa.id %}">Cambiar estado</a>
+            <a href="{% url 'crear_reserva' mesa.id %}">Crear reserva</a>
+            <a href="{% url 'crear_pedido' mesa.id %}">Crear pedido</a>
         </div>
+    </div>
     {% endfor %}
-    {% if caja_abierta %}
-    <a href="{% url 'consulta_caja' caja_abierta.id %}">Consulta de Caja</a>
-    {% else %}
-    <a href="{% url 'apertura_caja' %}">Abrir Caja</a>
-    {% endif %}
 </div>
+{% if caja_abierta %}
+<a href="{% url 'consulta_caja' caja_abierta.id %}">Consulta de Caja</a>
+{% else %}
+<a href="{% url 'apertura_caja' %}">Abrir Caja</a>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/mesas.js' %}"></script>
 {% endblock %}
