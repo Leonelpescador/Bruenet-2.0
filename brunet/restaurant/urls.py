@@ -1,6 +1,8 @@
-from django.urls import path
+from django.urls import path, include
 from .views import CustomLoginView
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
 from .views import (
     lista_mesas, 
     crear_mesa, 
@@ -21,7 +23,7 @@ from .views import (
     eliminar_compra
 )
 
-urlpatterns = [
+urlpatterns =[
     
     
     path('login/', views.CustomLoginView.as_view(), name='login'),
@@ -76,5 +78,9 @@ urlpatterns = [
     path('caja/consulta/<int:caja_id>/', views.consulta_caja, name='consulta_caja'),
     
     #pagina cliente.
-    path('cliente/', views.cliente, name='cliente')
-]
+    path('cliente/', views.cliente, name='cliente'),
+    
+    
+    #menu "Platos"
+    path('menu/crear/', views.crear_menu, name='crear_menu'),
+    ]

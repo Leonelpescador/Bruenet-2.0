@@ -112,3 +112,14 @@ LOGIN_URL = 'login'
 # Custom User model
 AUTH_USER_MODEL = 'restaurant.Usuario'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Agregar esto a la configuración de URLs
+from django.conf import settings
+from django.conf.urls.static import static
+
+
+
+
+

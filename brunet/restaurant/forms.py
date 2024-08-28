@@ -80,3 +80,11 @@ class InventarioForm(forms.ModelForm):
     class Meta:
         model = Inventario
         fields = ['nombre_producto', 'cantidad_actual', 'cantidad_minima', 'unidad_medida']
+
+# Fromulario de menu
+from django import forms
+from .models import Menu
+class MenuForm(forms.ModelForm):
+    class Meta:
+        model = Menu
+        fields = ['nombre_plato', 'descripcion', 'precio', 'disponible', 'imagen']  # Incluye el campo de imagen

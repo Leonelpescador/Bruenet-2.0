@@ -160,3 +160,18 @@ class TransaccionCaja(models.Model):
     def __str__(self):
         return f'Transacción {self.tipo} - {self.monto}'
 #termina modificacion de caja 
+
+
+#menu "Platos"
+class Menu(models.Model):
+    nombre_plato = models.CharField(max_length=200)
+    descripcion = models.TextField(blank=True, null=True)
+    precio = models.DecimalField(max_digits=6, decimal_places=2)
+    disponible = models.BooleanField(default=True)
+    imagen = models.ImageField(upload_to='menu_images/', blank=True, null=True)  # Campo para la imagen del plato
+
+    def __str__(self):
+        return self.nombre_plato
+
+#fin menu plato.
+

@@ -410,3 +410,21 @@ def cliente(request):
         'mesas': mesas,
         'menu_items': menu_items,
     })
+
+
+#Menu "Platos."
+from django.shortcuts import render, redirect
+from .forms import MenuForm
+from .models import Menu
+
+@login_required
+def crear_menu(request):
+    if request.method == 'POST':
+        form = MenuForm(request.POST, request.FILES)  # Asegúrate de manejar los archivos
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'El menú ha sido guardado con éxito.')
+            return redirect('cliente')  # Redirigir a la página del cliente o donde prefieras
+    else:
+        form = MenuForm()
+    return render(request, 'menu/menu.html', {'form': form})
