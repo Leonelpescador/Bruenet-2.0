@@ -511,3 +511,52 @@ def cambiar_disponibilidad_menu(request, menu_id):
     menu_item.save()
     messages.success(request, 'La disponibilidad del menú ha sido actualizada.')
     return redirect('listar_menu')
+
+
+#pagos.
+
+@login_required
+def crear_pago(request):
+    caja_abierta = Caja.objects.filter(estado='abierta').first()
+    if not caja_abierta:
+        messages.error(request, 'Debe abrir una caja antes de registrar pagos.')
+        return redirect('apertura_caja')
+
+    pedidos_pendientes = Pedido.objects.filter(estado='pendiente')
+
+    if request.method == 'POST':
+        form = PagoForm(request.POST)
+        if form.is_valid():
+            pago = form.save(commit=False)
+            pago.caja = caja_abierta
+            pago.save()
+            messages.success(request, 'Pago registrado exitosamente.')
+            return redirect('consulta_caja', caja_id=caja_abierta.id)
+    else:
+        form = PagoForm()
+
+    return render(request, 'caja/crear_pago.html', {'form': form, 'pedidos': pedidos_pendientes})
+
+@login_required
+def modificar_pago(request, pago_id):
+    pago = get_object_or_404(Pago, id=pago_id)
+    if request.method == 'POST':
+        form = PagoForm(request.POST, instance=pago)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Pago modificado exitosamente.')
+            return redirect('consulta_caja', caja_id=pago.caja.id)
+    else:
+        form = PagoForm(instance=pago)
+
+    return render(request, 'caja/modificar_pago.html', {'form': form, 'pago': pago})
+
+@login_required
+def eliminar_pago(request, pago_id):
+    pago = get_object_or_404(Pago, id=pago_id)
+    if request.method == 'POST':
+        pago.delete()
+        messages.success(request, 'Pago eliminado exitosamente.')
+        return redirect('consulta_caja', caja_id=pago.caja.id)
+
+    return render(request, 'caja/eliminar_pago.html', {'pago': pago})

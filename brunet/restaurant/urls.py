@@ -90,4 +90,9 @@ urlpatterns =[
     path('menu/editar/<int:menu_id>/', views.editar_menu, name='editar_menu'),
     path('menu/eliminar/<int:menu_id>/', views.eliminar_menu, name='eliminar_menu'),
     path('menu/cambiar-disponibilidad/<int:menu_id>/', views.cambiar_disponibilidad_menu, name='cambiar_disponibilidad_menu'),
+    
+    #pago
+    path('caja/pago/crear/', views.crear_pago, name='crear_pago'),
+    path('caja/pago/modificar/<int:pago_id>/', views.modificar_pago, name='modificar_pago'),
+    path('caja/pago/eliminar/<int:pago_id>/', views.eliminar_pago, name='eliminar_pago'),
     ]

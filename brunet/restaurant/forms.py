@@ -25,7 +25,7 @@ class PedidoForm(forms.ModelForm):
 class ModificarPedidoForm(forms.ModelForm):
     class Meta:
         model = Pedido
-        fields = ['usuario', 'mesa', 'estado', 'total']  # Campos a modificar en un pedido
+        fields = ['usuario', 'mesa', 'estado', 'total']  
 
 # Formulario para Pago
 class PagoForm(forms.ModelForm):
