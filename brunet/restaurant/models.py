@@ -127,10 +127,18 @@ class Inventario(models.Model):
         return f'{self.nombre_producto} ({self.unidad_medida})'
 
 class Proveedor(models.Model):
-    nombre_proveedor = models.CharField(max_length=100)
-    contacto = models.CharField(max_length=100, blank=True, null=True)
+    nombre_proveedor = models.CharField(max_length=255)
+    contact_method = models.CharField(
+        max_length=10,
+        choices=[('cel_tel', 'Cel/Tel'), ('email', 'Email')],
+        default='cel_tel'  
+    )
     telefono = models.CharField(max_length=15, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
+
+    def __str__(self):
+        return self.nombre_proveedor
+
 
 class Compra(models.Model):
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)

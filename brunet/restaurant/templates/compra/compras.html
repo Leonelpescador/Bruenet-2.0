@@ -1,6 +1,69 @@
-{% extends 'restaurant/base.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
+<style>
+    .compras-container {
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .compras-container h1 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+        font-size: 28px;
+    }
+
+    .btn-primary {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+        margin-bottom: 20px;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    .compras-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .compra-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 15px;
+        margin-bottom: 10px;
+        background-color: #f8f8f8;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .compra-item span {
+        font-size: 16px;
+        color: #333;
+    }
+
+    .compra-item span:first-child {
+        font-weight: bold;
+    }
+
+    .compra-item span:last-child {
+        color: #28a745;
+        font-weight: bold;
+    }
+</style>
+
 <div class="compras-container">
     <h1>Compras</h1>
     <a href="{% url 'crear_compra' %}" class="btn btn-primary">Registrar Nueva Compra</a>

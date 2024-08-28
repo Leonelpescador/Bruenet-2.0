@@ -33,9 +33,6 @@ def home(request):
     return render(request, 'home.html', context)
 
 
-
-
-
 # Creación de Pedido
 @login_required
 def crear_pedido(request, mesa_id):
@@ -213,33 +210,36 @@ def crear_proveedor(request):
         form = ProveedorForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Proveedor agregado con éxito.')
             return redirect('proveedores')
     else:
         form = ProveedorForm()
-    return render(request, 'proveedores/crear_proveedor.html', {'form': form})
+    
+    return render(request, 'proveedores/crear_proveedores.html', {'form': form})
 
 # Edición de Proveedor
+@login_required
 def editar_proveedor(request, pk):
-    proveedor = get_object_or_404(Proveedor, pk=pk)
-    if request.method == 'POST':
+    proveedor = Proveedor.objects.get(pk=pk)
+    if request.method == "POST":
         form = ProveedorForm(request.POST, instance=proveedor)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Proveedor actualizado con éxito.')
             return redirect('proveedores')
     else:
         form = ProveedorForm(instance=proveedor)
-    return render(request, 'proveedores/editar_proveedor.html', {'form': form})
+
+    return render(request, 'proveedores/editar_proveedores.html', {'form': form})
+
 
 # Eliminación de Proveedor
+@login_required
 def eliminar_proveedor(request, pk):
-    proveedor = get_object_or_404(Proveedor, pk=pk)
-    if request.method == 'POST':
+    proveedor = Proveedor.objects.get(pk=pk)
+    if request.method == "POST":
         proveedor.delete()
-        messages.success(request, 'Proveedor eliminado con éxito.')
         return redirect('proveedores')
-    return render(request, 'proveedores/eliminar_proveedor.html', {'proveedor': proveedor})
+    
+    return render(request, 'proveedores/eliminar_proveedores.html', {'proveedor': proveedor})
 
 # Compras
 @login_required

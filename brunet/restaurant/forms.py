@@ -73,7 +73,19 @@ class MesaForm(forms.ModelForm):
 class ProveedorForm(forms.ModelForm):
     class Meta:
         model = Proveedor
-        fields = ['nombre_proveedor', 'contacto', 'telefono', 'email']
+        fields = ['nombre_proveedor', 'contact_method', 'telefono', 'email']
+        labels = {
+            'nombre_proveedor': 'Nombre del Proveedor',
+            'contact_method': 'Método de Contacto',
+            'telefono': 'Teléfono',
+            'email': 'Correo Electrónico',
+        }
+        widgets = {
+            'nombre_proveedor': forms.TextInput(attrs={'class': 'form-control'}),
+            'contact_method': forms.Select(attrs={'class': 'form-control'}),
+            'telefono': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
 
 # Formulario para Inventario
 class InventarioForm(forms.ModelForm):

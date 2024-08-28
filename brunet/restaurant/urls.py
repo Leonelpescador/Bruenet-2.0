@@ -8,9 +8,6 @@ from .views import (
     crear_mesa, 
     editar_mesa, 
     eliminar_mesa, 
-    crear_proveedor, 
-    editar_proveedor, 
-    eliminar_proveedor,
     modificar_pedido,
     eliminar_pedido,
     crear_pago,
@@ -20,7 +17,10 @@ from .views import (
     modificar_reserva,
     eliminar_reserva,
     editar_compra,
-    eliminar_compra
+    eliminar_compra,
+    proveedores, 
+    editar_proveedor,
+    eliminar_proveedor
 )
 
 urlpatterns =[
@@ -48,6 +48,8 @@ urlpatterns =[
     path('reserva/crear/', views.crear_reserva, name='crear_reserva'),
     path('reserva/modificar/<int:reserva_id>/', views.modificar_reserva, name='modificar_reserva'),
     path('reserva/eliminar/<int:reserva_id>/', views.eliminar_reserva, name='eliminar_reserva'),
+
+
     
     # Inventario 
     path('inventario/', views.inventario, name='inventario'),
@@ -55,9 +57,10 @@ urlpatterns =[
     path('inventario/editar/<int:pk>/', views.editar_inventario, name='editar_inventario'),
     path('inventario/eliminar/<int:pk>/', views.eliminar_inventario, name='eliminar_inventario'),
     
-    # Proveedor 
+    
+    # Proveedor
     path('proveedores/', views.proveedores, name='proveedores'),
-    path('proveedores/crear/', views.crear_proveedor, name='crear_proveedor'),
+    path('proveedores/crear/', views.crear_proveedor, name='crear_proveedor'),  # Actualizado a 'crear_proveedor'
     path('proveedores/editar/<int:pk>/', views.editar_proveedor, name='editar_proveedor'),
     path('proveedores/eliminar/<int:pk>/', views.eliminar_proveedor, name='eliminar_proveedor'),
     
