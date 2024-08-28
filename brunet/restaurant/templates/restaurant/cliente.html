@@ -150,7 +150,12 @@
             {% for item in menu_items %}
                 <div class="col-md-4">
                     <div class="card menu-card">
-                        <img src="{{ item.imagen.url }}" class="card-img-top" alt="{{ item.nombre_plato }}">
+                        {% if item.imagen %}
+                            <img src="{{ item.imagen.url }}" class="card-img-top" alt="{{ item.nombre_plato }}">
+                        {% else %}
+                            <img src="/static/images/default_image.png" class="card-img-top" alt="Imagen por defecto">
+                            <p class="card-img-top text-center text-muted">El Chef aún no decide que foto poner.</p>
+                        {% endif %}
                         <div class="card-body">
                             <h5 class="card-title menu-card-title">{{ item.nombre_plato }}</h5>
                             <p class="card-text">{{ item.descripcion }}</p>
@@ -161,8 +166,6 @@
             {% endfor %}
         </div>
     </section>
-
-    
     <footer class="text-center py-4">
         <p>&copy; 2024 Restaurante Moderno. Todos los derechos reservados.</p>
     </footer>
