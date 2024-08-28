@@ -414,17 +414,43 @@ def cliente(request):
 
 #Menu "Platos."
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from .forms import MenuForm
 from .models import Menu
 
 @login_required
+def listar_menu(request):
+    menu_items = Menu.objects.all()
+    return render(request, 'menu/listar_menu.html', {'menu_items': menu_items})
+@login_required
 def crear_menu(request):
     if request.method == 'POST':
-        form = MenuForm(request.POST, request.FILES)  # Asegúrate de manejar los archivos
+        form = MenuForm(request.POST, request.FILES)  
         if form.is_valid():
             form.save()
             messages.success(request, 'El menú ha sido guardado con éxito.')
-            return redirect('cliente')  # Redirigir a la página del cliente o donde prefieras
+            return redirect('cliente')  
     else:
         form = MenuForm()
-    return render(request, 'menu/menu.html', {'form': form})
+    return render(request, 'menu/listar_menu.html', {'form': form})
+
+@login_required
+def editar_menu(request, menu_id):
+    menu_item = get_object_or_404(Menu, id=menu_id)
+    if request.method == 'POST':
+        form = MenuForm(request.POST, request.FILES, instance=menu_item)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Plato actualizado con éxito.')
+            return redirect('listar_menu')  
+    else:
+        form = MenuForm(instance=menu_item)
+    return render(request, 'menu/editar_menu.html', {'form': form})
+@login_required
+def eliminar_menu(request, menu_id):
+    menu_item = get_object_or_404(Menu, id=menu_id)
+    if request.method == 'POST':
+        menu_item.delete()
+        messages.success(request, 'Plato eliminado con éxito.')
+        return redirect('listar_menu')
+    return render(request, 'menu/eliminar_menu.html', {'menu': menu_item})

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="text-center my-4">Listado de Menús</h2>
+    <a href="{% url 'crear_menu' %}" class="btn btn-primary mb-4">Agregar Nuevo Plato</a>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre del Plato</th>
+                <th>Descripción</th>
+                <th>Precio</th>
+                <th>Disponible</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in menu_items %}
+            <tr>
+                <td>{{ item.nombre_plato }}</td>
+                <td>{{ item.descripcion }}</td>
+                <td>${{ item.precio }}</td>
+                <td>{{ item.disponible|yesno:"Sí,No" }}</td>
+                <td>
+                    <a href="{% url 'editar_menu' item.id %}" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="{% url 'eliminar_menu' item.id %}" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar este plato?');">Eliminar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

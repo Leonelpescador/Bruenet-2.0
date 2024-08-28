@@ -87,4 +87,4 @@ from .models import Menu
 class MenuForm(forms.ModelForm):
     class Meta:
         model = Menu
-        fields = ['nombre_plato', 'descripcion', 'precio', 'disponible', 'imagen']  # Incluye el campo de imagen
+        fields = ['nombre_plato', 'descripcion', 'precio', 'disponible', 'imagen']  
