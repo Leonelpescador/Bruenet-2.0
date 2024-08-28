@@ -121,5 +121,7 @@ from django.conf.urls.static import static
 
 
 
+STATIC_URL = '/static/'
+
 
 
