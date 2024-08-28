@@ -1,16 +1,47 @@
-{% extends "restaurant/base.html" %}
+{% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <h1>Consulta de Caja</h1>
-    <p>Total Inicial: {{ caja.total_inicial }}</p>
-    <p>Total Final: {{ caja.total_final }}</p>
-    <p>Estado: {% if caja.estado == 'cerrada' %} Cerrada {% else %} Abierta {% endif %}</p>
-    <h2>Transacciones</h2>
-    <ul>
-        {% for transaccion in transacciones %}
-        <li>{{ transaccion.tipo }} - {{ transaccion.monto }} - {{ transaccion.descripcion }}</li>
+  <div class="container my-5">
+    <h2 class="text-center mb-4">Consulta de Caja</h2>
+    
+    {% if messages %}
+      <div class="container mt-4">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+          </div>
         {% endfor %}
-    </ul>
-</div>
+      </div>
+    {% endif %}
+    
+    <h3>Resumen de Caja</h3>
+    <p><strong>Monto Total:</strong> ${{ monto_total }}</p>
+    
+    <h3>Pagos Realizados</h3>
+    
+    {% if pagos %}
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID de Pago</th>
+            <th>Monto</th>
+            <th>Fecha y Hora</th>
+            <th>Descripción</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pago in pagos %}
+          <tr>
+            <td>{{ pago.id }}</td>
+            <td>${{ pago.monto }}</td>
+            <td>{{ pago.fecha_hora }}</td>
+            <td>{{ pago.descripcion }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No se han registrado pagos en esta caja.</p>
+    {% endif %}
+  </div>
 {% endblock %}

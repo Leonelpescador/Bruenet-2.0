@@ -66,5 +66,10 @@
             </div>
         </div>
     {% endfor %}
+    {% if caja_abierta %}
+    <a href="{% url 'consulta_caja' caja_abierta.id %}">Consulta de Caja</a>
+    {% else %}
+    <a href="{% url 'apertura_caja' %}">Abrir Caja</a>
+    {% endif %}
 </div>
 {% endblock %}

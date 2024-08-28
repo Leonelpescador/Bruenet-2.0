@@ -29,6 +29,10 @@ urlpatterns =[
     path('login/', views.CustomLoginView.as_view(), name='login'),
     path('', views.home, name='home'),
     
+    
+    #clientes
+    path('cliente/', views.cliente, name='cliente'),
+    
     # Pedido 
     path('pedido/crear/<int:mesa_id>/', views.crear_pedido, name='crear_pedido'),
     path('pedido/modificar/<int:pedido_id>/', views.modificar_pedido, name='modificar_pedido'),
@@ -71,14 +75,13 @@ urlpatterns =[
     path('mesas/crear-reserva/<int:mesa_id>/', views.crear_reserva, name='crear_reserva'),
     path('mesas/crear-pedido/<int:mesa_id>/', views.crear_pedido, name='crear_pedido'),
     
-    # Caja 
-    path('caja/abrir/', views.abrir_caja, name='abrir_caja'),
-    path('caja/cerrar/<int:caja_id>/', views.cerrar_caja, name='cerrar_caja'),
-    path('caja/registrar_pago/<int:pedido_id>/', views.registrar_pago, name='registrar_pago'),
-    path('caja/consulta/<int:caja_id>/', views.consulta_caja, name='consulta_caja'),
     
-    #pagina cliente.
-    path('cliente/', views.cliente, name='cliente'),
+    # Caja 
+    path('caja/apertura/', views.apertura_caja, name='apertura_caja'),
+    path('caja/consulta/<int:caja_id>/', views.consulta_caja, name='consulta_caja'),
+    path('caja/cierre/', views.cierre_caja, name='cierre_caja'),
+    path('caja/registrar_pago/<int:pedido_id>/', views.registrar_pago, name='registrar_pago'),
+    
     
     
     #menu "Platos"

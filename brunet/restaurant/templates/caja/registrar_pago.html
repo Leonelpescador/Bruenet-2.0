@@ -1,21 +1,47 @@
-{% extends "restaurant/base.html" %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Pago</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="{% static 'js/tu_archivo_js.js' %}"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Registrar Pago</h1>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+                <label for="metodo_pago" class="form-label">Método de Pago</label>
+                <select name="metodo_pago" id="metodo_pago" class="form-select">
+                    <option value="efectivo">Efectivo</option>
+                    <option value="tarjeta">Tarjeta</option>
+                    <option value="transferencia">Transferencia</option>
+                </select>
+            </div>
 
-{% block content %}
-<div class="container">
-    <h1>Registrar Pago</h1>
-    <p>Pedido: {{ pedido.id }}</p>
-    <p>Total a Pagar: {{ pedido.total }}</p>
-    <form method="post">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="metodo_pago" class="form-label">Método de Pago:</label>
-            <select name="metodo_pago" class="form-control" required>
-                <option value="efectivo">Efectivo</option>
-                <option value="tarjeta">Tarjeta</option>
-                <option value="transferencia">Transferencia</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Registrar Pago</button>
-    </form>
-</div>
-{% endblock %}
+            <div class="mb-3">
+                <label for="monto_total" class="form-label">Monto Total</label>
+                <input type="text" id="monto_total" class="form-control" value="{{ pedido.total }}" readonly>
+            </div>
+
+            <div class="mb-3" id="efectivo_section" style="display:none;">
+                <label for="monto_pagado" class="form-label">Monto Pagado</label>
+                <input type="number" id="monto_pagado" class="form-control">
+            </div>
+
+            <div class="mb-3" id="vuelto_section" style="display:none;">
+                <label for="vuelto" class="form-label">Vuelto</label>
+                <input type="text" id="vuelto" class="form-control" readonly>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Registrar Pago</button>
+        </form>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -22,8 +22,14 @@ from django.contrib.auth.models import User
 # Home View
 @login_required
 def home(request):
-    mesas = Mesa.objects.all()
-    return render(request, 'home.html', {'mesas': mesas})
+    caja = Caja.objects.filter(estado='abierta').first()
+    if caja:
+        return redirect('consulta_caja', caja_id=caja.id)
+    else:
+        return redirect('apertura_caja')
+
+    
+
 
 # Apertura de Caja
 @login_required
@@ -308,7 +314,7 @@ def eliminar_compra(request, compra_id):
 def lista_mesas(request):
     mesas = Mesa.objects.all()
     return render(request, 'mesa/mesas.html', {'mesas': mesas})
-
+@login_required
 def crear_mesa(request):
     if request.method == 'POST':
         form = MesaForm(request.POST)
@@ -318,7 +324,7 @@ def crear_mesa(request):
     else:
         form = MesaForm()
     return render(request, 'mesa/crear_mesa.html', {'form': form})
-
+@login_required
 def editar_mesa(request, pk):  
     mesa = get_object_or_404(Mesa, id=pk)
     if request.method == 'POST':
@@ -329,50 +335,91 @@ def editar_mesa(request, pk):
     else:
         form = MesaForm(instance=mesa)
     return render(request, 'mesa/editar_mesa.html', {'form': form})
-
+@login_required
 def eliminar_mesa(request, mesa_id):
     mesa = get_object_or_404(Mesa, id=mesa_id)
     mesa.delete()
     return redirect('lista_mesas')
 
+
 # Flujo de Caja
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.utils import timezone
+from django.db.models import Sum
+from .models import Caja, Pago, Pedido, TransaccionCaja
+from django.contrib.auth.decorators import login_required
 
 @login_required
-def abrir_caja(request):
+def apertura_caja(request):
     if request.method == 'POST':
-        total_inicial = request.POST.get('total_inicial')
-        caja = Caja(usuario=request.user, total_inicial=total_inicial)
-        caja.save()
-        return redirect('consulta_caja', caja_id=caja.id)
-    return render(request, 'caja/abrir_caja.html')
-
-@login_required
-def cerrar_caja(request, caja_id):
-    caja = get_object_or_404(Caja, id=caja_id)
-    if caja.estado == 'cerrada':
-        return redirect('consulta_caja', caja_id=caja.id)
+        monto_inicial = request.POST.get('monto_inicial')
+        fecha_hora = request.POST.get('fecha_hora', timezone.now())
+        
+        # Registrar apertura de caja
+        caja = Caja.objects.create(
+            usuario=request.user,
+            total_inicial=monto_inicial,
+            apertura=fecha_hora,
+            estado='abierta'
+        )
+        
+        messages.success(request, 'Apertura de caja registrada exitosamente.')
+        return redirect('consulta_caja', caja_id=caja.id)  # Pasar caja_id aquí
     
+    return render(request, 'caja/apertura_caja.html')
+
+@login_required
+def consulta_caja(request, caja_id):
+    caja = get_object_or_404(Caja, id=caja_id)
+    transacciones = TransaccionCaja.objects.filter(caja=caja)
+    pagos = Pago.objects.filter(caja=caja)
+    monto_total = pagos.aggregate(total=Sum('monto'))['total'] or 0
+    return render(request, 'caja/consulta_caja.html', {
+        'caja': caja,
+        'transacciones': transacciones,
+        'monto_total': monto_total,
+        'pagos': pagos
+    })
+    
+@login_required
+def cierre_caja(request):
+    caja = Caja.objects.filter(estado='abierta').order_by('-apertura').first()
+    
+    if not caja:
+        messages.error(request, 'No hay caja abierta para cerrar.')
+        return redirect('consulta_caja')
+
     if request.method == 'POST':
-        total_final = request.POST.get('total_final')
-        caja.cerrar_caja(total_final)
-        return redirect('consulta_caja', caja_id=caja.id)
-    return render(request, 'caja/cerrar_caja.html', {'caja': caja})
+        monto_final = request.POST.get('monto_final')
+        fecha_hora = request.POST.get('fecha_hora', timezone.now())
+        caja.cierre = fecha_hora
+        caja.total_final = monto_final
+        caja.estado = 'cerrada'
+        caja.save()
+        
+        messages.success(request, 'Cierre de caja registrado exitosamente.')
+        return redirect('consulta_caja', caja_id=caja.id)  
+    
+    return render(request, 'caja/cierre_caja.html', {
+        'caja': caja
+    })
 
 @login_required
 def registrar_pago(request, pedido_id):
     caja_abierta = Caja.objects.filter(estado='abierta').first()
     if not caja_abierta:
-        return redirect('abrir_caja')
+        return redirect('apertura_caja')
     
     pedido = get_object_or_404(Pedido, id=pedido_id, estado='pendiente')
     if request.method == 'POST':
         metodo_pago = request.POST.get('metodo_pago')
-        pago = Pago(pedido=pedido, metodo_pago=metodo_pago)
+        pago = Pago(pedido=pedido, metodo_pago=metodo_pago, monto=pedido.total)
         pago.save()
         pedido.estado = 'pagado'
         pedido.save()
 
-        # Registrar ingreso en la caja
+        
         transaccion = TransaccionCaja(
             caja=caja_abierta,
             tipo='ingreso',
@@ -381,15 +428,11 @@ def registrar_pago(request, pedido_id):
         )
         transaccion.save()
 
-        return redirect('consulta_caja', caja_id=caja_abierta.id)
+        return redirect('consulta_caja', caja_id=caja_abierta.id)  
     
     return render(request, 'caja/registrar_pago.html', {'pedido': pedido, 'caja': caja_abierta})
 
-@login_required
-def consulta_caja(request, caja_id):
-    caja = get_object_or_404(Caja, id=caja_id)
-    transacciones = TransaccionCaja.objects.filter(caja=caja)
-    return render(request, 'caja/consulta_caja.html', {'caja': caja, 'transacciones': transacciones})
+
 
 # Logger
 

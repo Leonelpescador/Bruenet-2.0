@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h2>Apertura de Caja</h2>
+  <form method="post" action="{% url 'apertura_caja' %}">
+    {% csrf_token %}
+    <label for="monto_inicial">Monto Inicial:</label>
+    <input type="number" id="monto_inicial" name="monto_inicial" step="0.01" required>
+    
+    <label for="fecha_hora">Fecha y Hora:</label>
+    <input type="datetime-local" id="fecha_hora" name="fecha_hora" required>
+    
+    <button type="submit">Registrar Apertura</button>
+  </form>
+  {% if messages %}
+    {% for message in messages %}
+      <p>{{ message }}</p>
+    {% endfor %}
+  {% endif %}
+{% endblock %}
+
