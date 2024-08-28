@@ -2,80 +2,13 @@
 
 {% block content %}
 <h1>Mesas del Restaurante</h1>
-<title>Mesas del Restaurante</title>
-<style>
-    body {
-        font-family: 'Arial', sans-serif;
-        background-color: #f0f0f5;
-        margin: 0;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
 
-    h1 {
-        color: #333;
-        margin-bottom: 20px;
-    }
+{% if not caja_abierta %}
+    <div class="alert alert-warning">
+        No hay una caja abierta actualmente. <a href="{% url 'apertura_caja' %}">Abrir Caja</a>
+    </div>
+{% endif %}
 
-    .mesas {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        justify-content: center;
-    }
-
-    .mesa {
-        width: 150px;
-        height: 150px;
-        background-color: green;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        text-align: center;
-        padding: 10px;
-        box-sizing: border-box;
-        position: relative;
-    }
-
-    .mesa.ocupada {
-        background-color: red;
-    }
-
-    .mesa.reservada {
-        background-color: grey;
-    }
-
-    .menu-desplegable {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        background-color: white;
-        border: 1px solid #ccc;
-        padding: 10px;
-        border-radius: 5px;
-        z-index: 1000;
-    }
-
-    .mesa:hover .menu-desplegable {
-        display: block;
-    }
-
-    .menu-desplegable a {
-        display: block;
-        margin-bottom: 5px;
-        color: #333;
-        text-decoration: none;
-    }
-
-    .menu-desplegable a:hover {
-        color: #007bff;
-    }
-</style>
 <div class="mesas">
     {% for mesa in mesas %}
     <div class="mesa 
@@ -95,13 +28,42 @@
     </div>
     {% endfor %}
 </div>
+
 {% if caja_abierta %}
 <a href="{% url 'consulta_caja' caja_abierta.id %}">Consulta de Caja</a>
 {% else %}
 <a href="{% url 'apertura_caja' %}">Abrir Caja</a>
 {% endif %}
+
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/mesas.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const mesas = document.querySelectorAll('.mesa');
+
+        mesas.forEach(mesa => {
+            mesa.addEventListener('click', function (event) {
+                event.stopPropagation();
+                closeAllMenus();
+
+                const menu = mesa.querySelector('.menu-desplegable');
+                if (menu) {
+                    menu.style.display = 'block';
+                }
+            });
+        });
+
+        document.addEventListener('click', function () {
+            closeAllMenus();
+        });
+
+        function closeAllMenus() {
+            const menus = document.querySelectorAll('.menu-desplegable');
+            menus.forEach(menu => {
+                menu.style.display = 'none';
+            });
+        }
+    });
+</script>
 {% endblock %}
