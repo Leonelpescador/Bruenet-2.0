@@ -66,6 +66,7 @@ def crear_pedido(request, mesa_id):
     
     return render(request, 'pedido/crear_pedido.html', {'pedido_form': pedido_form, 'formset': formset, 'mesa': mesa})
 
+
 # Modificación de Pedido
 @login_required
 def modificar_pedido(request, pedido_id):

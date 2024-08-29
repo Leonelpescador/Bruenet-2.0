@@ -7,7 +7,8 @@ from .views import (
     lista_mesas, 
     crear_mesa, 
     editar_mesa, 
-    eliminar_mesa, 
+    eliminar_mesa,
+    crear_pedido, 
     modificar_pedido,
     eliminar_pedido,
     crear_pago,
@@ -28,16 +29,14 @@ from .views import (
 )
 
 urlpatterns =[
-    
-    
     path('login/', views.CustomLoginView.as_view(), name='login'),
     path('', views.home, name='home'),
     
-    
-    #clientes
+    # Clientes
     path('cliente/', views.cliente, name='cliente'),
     
-    # Pedido 
+    # Pedido
+    path('pedido/', views.pedidos_activos, name='pedido'),
     path('pedido/crear/<int:mesa_id>/', views.crear_pedido, name='crear_pedido'),
     path('pedido/modificar/<int:pedido_id>/', views.modificar_pedido, name='modificar_pedido'),
     path('pedido/eliminar/<int:pedido_id>/', views.eliminar_pedido, name='eliminar_pedido'),
@@ -53,14 +52,11 @@ urlpatterns =[
     path('reserva/eliminar/<int:reserva_id>/', views.eliminar_reserva, name='eliminar_reserva'),
     path('reservas/', views.reservas, name='reservas'),
 
-
-    
     # Inventario 
     path('inventario/', views.inventario, name='inventario'),
     path('inventario/crear/', views.crear_inventario, name='crear_inventario'),
     path('inventario/editar/<int:pk>/', views.editar_inventario, name='editar_inventario'),
     path('inventario/eliminar/<int:pk>/', views.eliminar_inventario, name='eliminar_inventario'),
-    
     
     # Proveedor
     path('proveedores/', views.proveedores, name='proveedores'),
@@ -79,9 +75,6 @@ urlpatterns =[
     path('mesa/', views.lista_mesas, name='lista_mesas'),
     path('mesa/eliminar/<int:mesa_id>/', views.eliminar_mesa, name='eliminar_mesa'),
     path('mesa/editar/<int:pk>/', views.editar_mesa, name='editar_mesa'),
-    path('mesa/crear-reserva/<int:mesa_id>/', views.crear_reserva, name='crear_reserva'),
-    path('mesa/crear-pedido/<int:mesa_id>/', views.crear_pedido, name='crear_pedido'),
-    
     
     # Caja 
     path('caja/apertura/', views.apertura_caja, name='apertura_caja'),
@@ -89,22 +82,15 @@ urlpatterns =[
     path('caja/cierre/', views.cierre_caja, name='cierre_caja'),
     path('caja/registrar_pago/<int:pedido_id>/', views.registrar_pago, name='registrar_pago'),
     
-    #pedidos
-    path('pedido/', views.pedidos_activos, name='pedido'),
-    path('pedido/crear/<int:mesa_id>/', views.crear_pedido, name='crear_pedido'),
-    path('pedido/modificar/<int:pedido_id>/', views.modificar_pedido, name='modificar_pedido'),
-    path('pedido/eliminar/<int:pedido_id>/', views.eliminar_pedido, name='eliminar_pedido'),
-    
-    #menu "Platos"
+    # Menu "Platos"
     path('menu/listar/', views.listar_menu, name='listar_menu'),
     path('menu/crear/', views.crear_menu, name='crear_menu'),
     path('menu/editar/<int:menu_id>/', views.editar_menu, name='editar_menu'),
     path('menu/eliminar/<int:menu_id>/', views.eliminar_menu, name='eliminar_menu'),
     path('menu/cambiar-disponibilidad/<int:menu_id>/', views.cambiar_disponibilidad_menu, name='cambiar_disponibilidad_menu'),
     
-    #pago
+    # Pago (duplicado?)
     path('caja/pago/crear/', views.crear_pago, name='crear_pago'),
     path('caja/pago/modificar/<int:pago_id>/', views.modificar_pago, name='modificar_pago'),
     path('caja/pago/eliminar/<int:pago_id>/', views.eliminar_pago, name='eliminar_pago'),
-    ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
