@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 style="text-align: center; font-size: 24px; color: #333;">Eliminar Reserva</h1>
+<div class="form-container" style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f7f9fc; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); text-align: center;">
+    <p>¿Estás seguro de que deseas eliminar esta reserva?</p>
+    <p><strong>Reserva para: {{ reserva.nombre_cliente }}</strong></p>
+    <p><strong>Fecha y Hora: {{ reserva.fecha_reserva }}</strong></p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger" style="background-color: #dc3545; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">
+            Eliminar
+        </button>
+        <a href="{% url 'reservas' %}" class="btn btn-secondary" style="padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; background-color: #6c757d; color: #fff; margin-left: 10px; transition: background-color 0.3s ease;">
+            Cancelar
+        </a>
+    </form>
+</div>
+{% endblock %}

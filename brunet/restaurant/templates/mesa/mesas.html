@@ -8,7 +8,7 @@
     <div class="mesas mb-3">
         {% for mesa in mesas %}
             <div class="mesa {% if mesa.estado == 'ocupada' %}ocupada{% elif mesa.estado == 'reservada' %}reservada{% else %}disponible{% endif %}">
-                <a href="{% url 'crear_reserva' mesa.id %}">Mesa {{ mesa.numero_mesa }}</a> - {{ mesa.estado }} - Capacidad: {{ mesa.capacidad }}
+                <a href="{% url 'crear_reserva'%}">Mesa {{ mesa.numero_mesa }}</a> - {{ mesa.estado }} - Capacidad: {{ mesa.capacidad }}
             </div>
         {% endfor %}
     </div>
