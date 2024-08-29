@@ -83,18 +83,32 @@ class DetallePedido(models.Model):
         self.subtotal = self.cantidad * self.precio_unitario
         super().save(*args, **kwargs)
 
+from django.db import models
+from .models import Usuario, Mesa
+
 class Reserva(models.Model):
     ESTADO_CHOICES = [
         ('pendiente', 'Pendiente'),
         ('confirmada', 'Confirmada'),
         ('cancelada', 'Cancelada'),
     ]
+
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     mesa = models.ForeignKey(Mesa, on_delete=models.CASCADE)
     fecha_reserva = models.DateTimeField()
     nombre_cliente = models.CharField(max_length=100)
     telefono_cliente = models.CharField(max_length=15, blank=True, null=True)
     estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='pendiente')
+
+    # Nuevo campo: número de personas
+    numero_personas = models.IntegerField()
+
+    # Nuevo campo: comentarios adicionales o peticiones especiales
+    comentarios = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"Reserva para {self.nombre_cliente} en {self.mesa} - {self.fecha_reserva.strftime('%d/%m/%Y %H:%M')} - {self.estado}"
+
 
 class Pago(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)
