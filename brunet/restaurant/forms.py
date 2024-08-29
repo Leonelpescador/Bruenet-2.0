@@ -101,7 +101,6 @@ class InventarioForm(forms.ModelForm):
         fields = ['nombre_producto', 'cantidad_actual', 'cantidad_minima', 'unidad_medida']
 
 # Fromulario de menu
-from django import forms
 from .models import Menu
 class MenuForm(forms.ModelForm):
     class Meta:
@@ -110,4 +109,15 @@ class MenuForm(forms.ModelForm):
         
         
 #flujo de pedido por si tiene algun problema ver aca chicos.!
-        
+
+from .models import Pedido, DetallePedido
+
+class PedidoForm(forms.ModelForm):
+    class Meta:
+        model = Pedido
+        fields = ['mesa', 'estado']  # usuario se asignará automáticamente, y el total se calculará
+
+class DetallePedidoForm(forms.ModelForm):
+    class Meta:
+        model = DetallePedido
+        fields = ['menu', 'cantidad']

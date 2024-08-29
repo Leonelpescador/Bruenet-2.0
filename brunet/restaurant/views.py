@@ -34,45 +34,85 @@ def home(request):
 
 
 # Creación de Pedido
+from .models import DetallePedido
+from .forms import PedidoForm, DetallePedidoForm
+from django.forms import inlineformset_factory
+
 @login_required
 def crear_pedido(request, mesa_id):
     mesa = get_object_or_404(Mesa, id=mesa_id)
+    PedidoFormSet = inlineformset_factory(Pedido, DetallePedido, form=DetallePedidoForm, extra=1)
+    
     if request.method == 'POST':
-        form = PedidoForm(request.POST)
-        if form.is_valid():
-            pedido = form.save(commit=False)
+        pedido_form = PedidoForm(request.POST)
+        formset = PedidoFormSet(request.POST)
+        if pedido_form.is_valid() and formset.is_valid():
+            pedido = pedido_form.save(commit=False)
             pedido.usuario = request.user
             pedido.mesa = mesa
             pedido.save()
+            
+            formset.instance = pedido
+            formset.save()
+            
+            pedido.total = sum(item.subtotal for item in pedido.detallepedido_set.all())
+            pedido.save()
+            
             messages.success(request, 'Pedido creado con éxito.')
             return redirect('home')
     else:
-        form = PedidoForm()
-    return render(request, 'pedido/crear_pedido.html', {'form': form, 'mesa': mesa})
+        pedido_form = PedidoForm(initial={'mesa': mesa})
+        formset = PedidoFormSet()
+    
+    return render(request, 'pedido/crear_pedido.html', {'pedido_form': pedido_form, 'formset': formset, 'mesa': mesa})
 
 # Modificación de Pedido
 @login_required
 def modificar_pedido(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
+    PedidoFormSet = inlineformset_factory(Pedido, DetallePedido, form=DetallePedidoForm, extra=0)
+    
     if request.method == 'POST':
-        form = ModificarPedidoForm(request.POST, instance=pedido)
-        if form.is_valid():
-            form.save()
+        pedido_form = ModificarPedidoForm(request.POST, instance=pedido)
+        formset = PedidoFormSet(request.POST, instance=pedido)
+        
+        if pedido_form.is_valid() and formset.is_valid():
+            pedido_form.save()
+            formset.save()
+            
+            # Recalcular el total del pedido
+            pedido.total = sum(item.subtotal for item in pedido.detallepedido_set.all())
+            pedido.save()
+            
             messages.success(request, 'Pedido modificado con éxito.')
             return redirect('home')
     else:
-        form = ModificarPedidoForm(instance=pedido)
-    return render(request, 'pedido/modificar_pedido.html', {'form': form})
+        pedido_form = ModificarPedidoForm(instance=pedido)
+        formset = PedidoFormSet(instance=pedido)
+    
+    return render(request, 'pedido/modificar_pedido.html', {'pedido_form': pedido_form, 'formset': formset, 'pedido': pedido})
+
 
 # Eliminación de Pedido
 @login_required
 def eliminar_pedido(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
+    
     if request.method == 'POST':
         pedido.delete()
         messages.success(request, 'Pedido eliminado con éxito.')
         return redirect('home')
+    
     return render(request, 'pedido/eliminar_pedido.html', {'pedido': pedido})
+
+#Pedidos activos.
+@login_required
+def pedidos_activos(request):
+    pedidos = Pedido.objects.filter(estado='pendiente')
+    return render(request, 'pedido/pedidos_activos.html', {'pedidos': pedidos})
+
+
+
 
 # Creación de Pago
 @login_required

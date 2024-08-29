@@ -89,7 +89,11 @@ urlpatterns =[
     path('caja/cierre/', views.cierre_caja, name='cierre_caja'),
     path('caja/registrar_pago/<int:pedido_id>/', views.registrar_pago, name='registrar_pago'),
     
-    
+    #pedidos
+    path('pedido/', views.pedidos_activos, name='pedido'),
+    path('pedido/crear/<int:mesa_id>/', views.crear_pedido, name='crear_pedido'),
+    path('pedido/modificar/<int:pedido_id>/', views.modificar_pedido, name='modificar_pedido'),
+    path('pedido/eliminar/<int:pedido_id>/', views.eliminar_pedido, name='eliminar_pedido'),
     
     #menu "Platos"
     path('menu/listar/', views.listar_menu, name='listar_menu'),
@@ -103,3 +107,4 @@ urlpatterns =[
     path('caja/pago/modificar/<int:pago_id>/', views.modificar_pago, name='modificar_pago'),
     path('caja/pago/eliminar/<int:pago_id>/', views.eliminar_pago, name='eliminar_pago'),
     ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

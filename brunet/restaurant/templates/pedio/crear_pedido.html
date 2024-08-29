@@ -2,103 +2,66 @@
 
 {% block content %}
 <style>
-    .pedido-container {
-        max-width: 600px;
+    .form-container {
+        max-width: 800px;
         margin: 50px auto;
         padding: 20px;
-        background-color: #fff;
-        border-radius: 10px;
+        background-color: #f7f9fc;
+        border-radius: 8px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
-    .pedido-container h1 {
+    h1 {
         text-align: center;
+        font-size: 24px;
+        color: #333;
         margin-bottom: 20px;
-        color: #333;
-        font-size: 28px;
     }
 
-    .form-group {
+    .detalle-pedido {
         margin-bottom: 15px;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-        color: #555;
-    }
-
-    .form-group input,
-    .form-group select {
-        width: 100%;
-        padding: 10px;
+        padding: 15px;
+        background-color: #fff;
+        border: 1px solid #ddd;
         border-radius: 5px;
-        border: 1px solid #ccc;
-        font-size: 16px;
-        color: #333;
+    }
+
+    .detalle-pedido p {
+        margin-bottom: 10px;
     }
 
     .btn-primary {
         display: inline-block;
         padding: 10px 20px;
-        background-color: #007bff;
+        background-color: #3498db;
         color: #fff;
         text-decoration: none;
         border-radius: 5px;
-        font-weight: bold;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
         transition: background-color 0.3s ease;
-        text-align: center;
         margin-top: 20px;
-        width: 100%;
     }
 
     .btn-primary:hover {
-        background-color: #0056b3;
+        background-color: #2980b9;
     }
-
-    .btn-secondary {
-        display: inline-block;
-        padding: 10px 20px;
-        background-color: #6c757d;
-        color: #fff;
-        text-decoration: none;
-        border-radius: 5px;
-        font-weight: bold;
-        transition: background-color 0.3s ease;
-        text-align: center;
-        margin-top: 10px;
-        width: 100%;
-    }
-
-    .btn-secondary:hover {
-        background-color: #5a6268;
-    }
-
 </style>
 
-<div class="pedido-container">
-    <h1>Crear Pedido</h1>
+<h1>Crear Pedido para la Mesa {{ mesa.numero_mesa }}</h1>
+<div class="form-container">
     <form method="post">
         {% csrf_token %}
-        <div class="form-group">
-            <label for="mesa">Mesa</label>
-            {{ form.mesa }}
-        </div>
-        <div class="form-group">
-            <label for="usuario">Usuario</label>
-            {{ form.usuario }}
-        </div>
-        <div class="form-group">
-            <label for="total">Total</label>
-            {{ form.total }}
-        </div>
-        <div class="form-group">
-            <label for="estado">Estado</label>
-            {{ form.estado }}
-        </div>
-        <button type="submit" class="btn-primary">Guardar Pedido</button>
-        <a href="{% url 'home' %}" class="btn-secondary">Cancelar</a>
+        {{ pedido_form.as_p }}
+        <h3>Seleccionar Platos:</h3>
+        {{ formset.management_form }}
+        {% for form in formset %}
+            <div class="detalle-pedido">
+                {{ form.as_p }}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Crear Pedido</button>
     </form>
 </div>
 {% endblock %}

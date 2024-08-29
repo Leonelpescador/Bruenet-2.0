@@ -15,14 +15,15 @@
     {% else %}
         disponible
     {% endif %}">
-        Mesa {{ mesa.numero_mesa }}<br>Estado: {{ mesa.estado }}<br>Capacidad: {{ mesa.capacidad }}<br>iD:{{mesa.id}}
+        Mesa N° {{ mesa.numero_mesa }}<br>{{ mesa.estado }}<br>Capacidad: {{ mesa.capacidad }}
         <div class="menu-desplegable">
             <a href="{% url 'editar_mesa' mesa.id %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Cambiar estado</a>
 
             <a href="{% url 'crear_reserva' %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Crear Reserva</a>
 
-            <a href="{% url 'crear_pedido' %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Crear pedido
-            </a>
+            <a href="{% url 'crear_pedido' %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Crear pedido</a>
+            
+            
             
 
         </div>
