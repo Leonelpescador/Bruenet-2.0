@@ -48,10 +48,10 @@ urlpatterns =[
     path('pago/eliminar/<int:pago_id>/', views.eliminar_pago, name='eliminar_pago'),
 
     # Reserva 
-    path('reservas/', views.reservas, name='reservas'),
     path('reserva/crear/', views.crear_reserva, name='crear_reserva'),
     path('reserva/modificar/<int:reserva_id>/', views.modificar_reserva, name='modificar_reserva'),
     path('reserva/eliminar/<int:reserva_id>/', views.eliminar_reserva, name='eliminar_reserva'),
+    path('reservas/', views.reservas, name='reservas'),
 
 
     

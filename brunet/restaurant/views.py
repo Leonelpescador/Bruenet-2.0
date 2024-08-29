@@ -121,20 +121,19 @@ def reservas(request):
     return render(request, 'reserva/reservas.html', {'reservas': reservas})
 
 # Creación de Reserva
+
 @login_required
-def crear_reserva(request, mesa_id):
-    mesa = get_object_or_404(Mesa, id=mesa_id)
+@login_required
+def crear_reserva(request):
     if request.method == 'POST':
         form = ReservaForm(request.POST)
         if form.is_valid():
-            reserva = form.save(commit=False)
-            reserva.mesa = mesa
-            reserva.save()
+            form.save()
             messages.success(request, 'Reserva creada con éxito.')
-            return redirect('home')
+            return redirect('reservas')  # Redirige a la lista de reservas o donde sea necesario
     else:
         form = ReservaForm()
-    return render(request, 'reserva/crear_reserva.html', {'form': form, 'mesa': mesa})
+    return render(request, 'reserva/crear_reserva.html', {'form': form})
 
 # Modificación de Reserva
 @login_required
