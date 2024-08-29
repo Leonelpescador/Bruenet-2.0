@@ -83,6 +83,9 @@ class DetallePedido(models.Model):
         self.subtotal = self.cantidad * self.precio_unitario
         super().save(*args, **kwargs)
 
+
+
+
 from django.db import models
 from .models import Usuario, Mesa
 
@@ -100,10 +103,10 @@ class Reserva(models.Model):
     telefono_cliente = models.CharField(max_length=15, blank=True, null=True)
     estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='pendiente')
 
-    # Nuevo campo: número de personas
+    
     numero_personas = models.IntegerField()
 
-    # Nuevo campo: comentarios adicionales o peticiones especiales
+    
     comentarios = models.TextField(blank=True, null=True)
 
     def __str__(self):

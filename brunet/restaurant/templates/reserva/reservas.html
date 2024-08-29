@@ -1,11 +1,81 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Reservas</h1>
-<a href="{% url 'crear_reserva' mesa.id %}">Crear Nueva Reserva</a>
-<ul>
-    {% for reserva in reservas %}
-    <li>{{ reserva.mesa }} - {{ reserva.fecha_reserva }} - {{ reserva.estado }}</li>
-    {% endfor %}
-</ul>
+<style>
+    .reservas-container {
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .reservas-container h1 {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+        font-size: 28px;
+    }
+
+    .btn-primary {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+        margin-bottom: 20px;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    .reservas-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .reserva-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        margin-bottom: 10px;
+        background-color: #f8f8f8;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .reserva-item span {
+        font-size: 16px;
+        color: #333;
+    }
+
+    .reserva-item span:first-child {
+        font-weight: bold;
+    }
+
+    .reserva-item .estado {
+        color: #28a745;
+        font-weight: bold;
+    }
+</style>
+
+<div class="reservas-container">
+    <h1>Reservas</h1>
+    <a href="{% url 'crear_reserva' %}" class="btn-primary">Crear Nueva Reserva</a>
+    <ul class="reservas-list">
+        {% for reserva in reservas %}
+        <li class="reserva-item">
+            <span>{{ reserva.mesa }}</span>
+            <span>{{ reserva.fecha_reserva|date:"d M Y H:i" }}</span>
+            <span class="estado">{{ reserva.estado }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
 {% endblock %}

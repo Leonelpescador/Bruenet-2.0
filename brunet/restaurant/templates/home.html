@@ -3,11 +3,7 @@
 {% block content %}
 <h1>Mesas del Restaurante</h1>
 
-{% if not caja_abierta %}
-    <div class="alert alert-warning">
-        No hay una caja abierta actualmente. <a href="{% url 'apertura_caja' %}">Abrir Caja</a>
-    </div>
-{% endif %}
+
 
 <div class="mesas">
     {% for mesa in mesas %}
@@ -19,19 +15,25 @@
     {% else %}
         disponible
     {% endif %}">
-        Mesa {{ mesa.numero_mesa }}<br>Estado: {{ mesa.estado }}<br>Capacidad: {{ mesa.capacidad }}
+        Mesa {{ mesa.numero_mesa }}<br>Estado: {{ mesa.estado }}<br>Capacidad: {{ mesa.capacidad }}<br>iD:{{mesa.id}}
         <div class="menu-desplegable">
             <a href="{% url 'editar_mesa' mesa.id %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Cambiar estado</a>
 
             <a href="{% url 'crear_reserva' %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Crear Reserva</a>
 
-        <a href="{% url 'crear_pedido' mesa.id %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Crear pedido</a>
+            <a href="{% url 'crear_pedido' %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Crear pedido
+            </a>
+            
 
         </div>
     </div>
     {% endfor %}
 </div>
-
+{% if not caja_abierta %}
+    <div class="alert alert-warning">
+        No hay una caja abierta actualmente.
+    </div>
+{% endif %}
 {% if caja_abierta %}
 <a href="{% url 'consulta_caja' caja_abierta.id %}">Consulta de Caja</a>
 {% else %}
