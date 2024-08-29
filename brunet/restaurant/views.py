@@ -109,8 +109,9 @@ def eliminar_pedido(request, pedido_id):
 #Pedidos activos.
 @login_required
 def pedidos_activos(request):
-    pedidos = Pedido.objects.filter(estado='pendiente')
+    pedidos = Pedido.objects.filter(estado__in=['pendiente', 'preparando'])  # Filtra según los estados que consideres activos
     return render(request, 'pedido/pedidos_activos.html', {'pedidos': pedidos})
+
 
 
 

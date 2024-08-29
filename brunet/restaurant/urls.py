@@ -35,12 +35,12 @@ urlpatterns =[
     # Clientes
     path('cliente/', views.cliente, name='cliente'),
     
-    # Pedido
-    path('pedido/', views.pedidos_activos, name='pedido'),
+    
+    path('pedido/', views.pedidos_activos, name='pedidos_activos'),
     path('pedido/crear/<int:mesa_id>/', views.crear_pedido, name='crear_pedido'),
     path('pedido/modificar/<int:pedido_id>/', views.modificar_pedido, name='modificar_pedido'),
     path('pedido/eliminar/<int:pedido_id>/', views.eliminar_pedido, name='eliminar_pedido'),
-    
+
     # Pago 
     path('pago/crear/<int:pedido_id>/', views.crear_pago, name='crear_pago'),
     path('pago/modificar/<int:pago_id>/', views.modificar_pago, name='modificar_pago'),

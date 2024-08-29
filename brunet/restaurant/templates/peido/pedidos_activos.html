@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Pedidos Activos</h1>
+<div class="pedidos-container">
+    <ul class="pedidos-list">
+        {% for pedido in pedidos %}
+        <li class="pedido-item">
+            <span>Mesa: {{ pedido.mesa.numero_mesa }}</span>
+            <span>Estado: {{ pedido.estado }}</span>
+            <span>Total: ${{ pedido.total }}</span>
+            <div class="pedido-actions">
+                <a href="{% url 'modificar_pedido' pedido.id %}" class="btn btn-edit">Modificar</a>
+                <a href="{% url 'eliminar_pedido' pedido.id %}" class="btn btn-delete">Eliminar</a>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
