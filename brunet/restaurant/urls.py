@@ -20,7 +20,11 @@ from .views import (
     eliminar_compra,
     proveedores, 
     editar_proveedor,
-    eliminar_proveedor
+    eliminar_proveedor,
+    crear_compra,  
+    compras,
+    editar_compra,
+    eliminar_compra
 )
 
 urlpatterns =[
@@ -60,15 +64,15 @@ urlpatterns =[
     
     # Proveedor
     path('proveedores/', views.proveedores, name='proveedores'),
-    path('proveedores/crear/', views.crear_proveedor, name='crear_proveedor'),  # Actualizado a 'crear_proveedor'
+    path('proveedores/crear/', views.crear_proveedor, name='crear_proveedor'),
     path('proveedores/editar/<int:pk>/', views.editar_proveedor, name='editar_proveedor'),
     path('proveedores/eliminar/<int:pk>/', views.eliminar_proveedor, name='eliminar_proveedor'),
     
     # Compra 
-    path('compras/', views.compras, name='compras'),
-    path('compra/crear/', views.crear_compra, name='crear_compra'),
-    path('compra/editar/<int:compra_id>/', views.editar_compra, name='editar_compra'),
-    path('compra/eliminar/<int:compra_id>/', views.eliminar_compra, name='eliminar_compra'),
+    path('compra/', views.compras, name='compras'),
+    path('compra/crear/', views.crear_compra, name='crear_compra'),  
+    path('compra/editar/<int:pk>/', views.editar_compra, name='editar_compra'),
+    path('compra/eliminar/<int:pk>/', views.eliminar_compra, name='eliminar_compra'),
     
     # Mesa 
     path('mesa/crear/', views.crear_mesa, name='crear_mesa'),
@@ -98,4 +102,4 @@ urlpatterns =[
     path('caja/pago/crear/', views.crear_pago, name='crear_pago'),
     path('caja/pago/modificar/<int:pago_id>/', views.modificar_pago, name='modificar_pago'),
     path('caja/pago/eliminar/<int:pago_id>/', views.eliminar_pago, name='eliminar_pago'),
-    ]
+    ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

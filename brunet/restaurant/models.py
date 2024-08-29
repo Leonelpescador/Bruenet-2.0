@@ -142,9 +142,14 @@ class Proveedor(models.Model):
 
 class Compra(models.Model):
     proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
-    fecha_compra = models.DateTimeField(auto_now_add=True)
-    total = models.DecimalField(max_digits=8, decimal_places=2)
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+    tiene_documentacion = models.BooleanField(default=False)
+    archivo_documentacion = models.FileField(upload_to='documentos/', blank=True, null=True)
+    detalle = models.TextField(blank=True, null=True)
+    fecha_compra = models.DateField(auto_now_add=True)
 
+    def __str__(self):
+        return f"Compra de {self.proveedor.nombre_proveedor} por ${self.total}"
 class DetalleCompra(models.Model):
     compra = models.ForeignKey(Compra, on_delete=models.CASCADE)
     inventario = models.ForeignKey(Inventario, on_delete=models.CASCADE)

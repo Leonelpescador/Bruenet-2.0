@@ -242,48 +242,50 @@ def eliminar_proveedor(request, pk):
     return render(request, 'proveedores/eliminar_proveedores.html', {'proveedor': proveedor})
 
 # Compras
-@login_required
-def compras(request):
-    compras = Compra.objects.all()
-    return render(request, 'compra/compras.html', {'compras': compras})
+from django.shortcuts import render, redirect
+from .models import Compra
+from .forms import CompraForm
 
-# Creación de Compra
-@login_required
 def crear_compra(request):
     if request.method == 'POST':
-        form = CompraForm(request.POST)
+        form = CompraForm(request.POST, request.FILES)
         if form.is_valid():
-            compra = form.save()
-            messages.success(request, 'Compra registrada con éxito.')
+            form.save()
             return redirect('compras')
     else:
         form = CompraForm()
+    
     return render(request, 'compra/crear_compra.html', {'form': form})
 
-# Edición de Compra
+def compras(request):
+    compras = Compra.objects.all()
+    for compra in compras:
+        # Determinamos si el archivo adjunto es un PDF
+        if compra.archivo_documentacion:
+            compra.es_pdf = compra.archivo_documentacion.url.lower().endswith('.pdf')
+        else:
+            compra.es_pdf = False
+    
+    return render(request, 'compra/compras.html', {'compras': compras})
+
 @login_required
-def editar_compra(request, compra_id):
-    compra = get_object_or_404(Compra, id=compra_id)
+def editar_compra(request, pk):
+    compra = get_object_or_404(Compra, pk=pk)
     if request.method == 'POST':
-        form = ModificarCompraForm(request.POST, instance=compra)
+        form = CompraForm(request.POST, request.FILES, instance=compra)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Compra modificada con éxito.')
             return redirect('compras')
     else:
-        form = ModificarCompraForm(instance=compra)
+        form = CompraForm(instance=compra)
     return render(request, 'compra/editar_compra.html', {'form': form})
-
-# Eliminación de Compra
 @login_required
-def eliminar_compra(request, compra_id):
-    compra = get_object_or_404(Compra, id=compra_id)
+def eliminar_compra(request, pk):
+    compra = get_object_or_404(Compra, pk=pk)
     if request.method == 'POST':
         compra.delete()
-        messages.success(request, 'Compra eliminada con éxito.')
         return redirect('compras')
     return render(request, 'compra/eliminar_compra.html', {'compra': compra})
-
 # Mesas
 @login_required
 def lista_mesas(request):

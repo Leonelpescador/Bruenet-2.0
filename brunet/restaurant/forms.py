@@ -55,7 +55,14 @@ class ModificarReservaForm(forms.ModelForm):
 class CompraForm(forms.ModelForm):
     class Meta:
         model = Compra
-        fields = ['proveedor', 'total']
+        fields = ['proveedor', 'total', 'tiene_documentacion', 'archivo_documentacion', 'detalle']
+        widgets = {
+            'proveedor': forms.Select(attrs={'class': 'form-control'}),
+            'total': forms.NumberInput(attrs={'class': 'form-control'}),
+            'tiene_documentacion': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'archivo_documentacion': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'detalle': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+        }
 
 # Formulario para Modificar Compra
 class ModificarCompraForm(forms.ModelForm):
