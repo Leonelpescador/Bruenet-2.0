@@ -75,7 +75,7 @@ class Pedido(models.Model):
 
 
 class DetallePedido(models.Model):
-    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)
+    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name='detalles')
     menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
     cantidad = models.IntegerField()
     precio_unitario = models.DecimalField(max_digits=6, decimal_places=2)
@@ -87,7 +87,6 @@ class DetallePedido(models.Model):
 
     def __str__(self):
         return f'{self.menu.nombre_plato} - {self.cantidad} unidades'
-
 
 
 

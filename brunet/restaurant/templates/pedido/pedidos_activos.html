@@ -7,8 +7,8 @@
     <table class="table">
         <thead>
             <tr>
-                <th>ID</th>
                 <th>Mesa</th>
+                <th>Detalle del Pedido</th>
                 <th>Estado</th>
                 <th>Total</th>
                 <th>Acciones</th>
@@ -17,10 +17,16 @@
         <tbody>
             {% for pedido in pedidos %}
                 <tr>
-                    <td>{{ pedido.id }}</td>
-                    <td>{{ pedido.mesa.numero_mesa }}</td>
+                    <td>Mesa {{ pedido.mesa.numero_mesa }}</td>
+                    <td>
+                        <ul>
+                            {% for detalle in pedido.detalles.all %}
+                                <li>{{ detalle.menu.nombre_plato }} - Cantidad: {{ detalle.cantidad }} - Precio: ${{ detalle.precio_unitario }}</li>
+                            {% endfor %}
+                        </ul>
+                    </td>
                     <td>{{ pedido.estado }}</td>
-                    <td>{{ pedido.total }}</td>
+                    <td>${{ pedido.total }}</td>
                     <td>
                         <a href="{% url 'modificar_pedido' pedido.id %}" class="btn btn-warning">Modificar</a>
                         <a href="{% url 'eliminar_pedido' pedido.id %}" class="btn btn-danger">Eliminar</a>

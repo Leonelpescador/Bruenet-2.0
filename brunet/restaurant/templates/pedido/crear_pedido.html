@@ -11,19 +11,23 @@
         </div>
         <h3>Seleccionar Platos:</h3>
         {{ formset.management_form }}
-        {% for form in formset %}
-            <div class="detalle-pedido" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 5px;">
-                <div class="form-group">
-                    {{ form.menu.label_tag }} {{ form.menu }}
+        <div id="formset-container">
+            {% for form in formset %}
+                <div class="detalle-pedido" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 5px;">
+                    <div class="form-group">
+                        {{ form.menu.label_tag }} {{ form.menu }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.cantidad.label_tag }} {{ form.cantidad }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.precio_unitario.label_tag }} {{ form.precio_unitario }}
+                    </div>
+                    <button type="button" class="btn btn-danger remove-form-btn">Eliminar</button>
                 </div>
-                <div class="form-group">
-                    {{ form.cantidad.label_tag }} {{ form.cantidad }}
-                </div>
-                <div class="form-group">
-                    {{ form.precio_unitario.label_tag }} {{ form.precio_unitario }}
-                </div>
-            </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
+        <button type="button" id="add-form-btn" class="btn btn-success">Agregar Otro Plato</button>
         <button type="submit" class="btn btn-primary">Crear Pedido</button>
     </form>
 </div>
@@ -31,8 +35,31 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="text/javascript">
     $(document).ready(function() {
-        // Cuando se seleccione un plato, obtener su precio
-        $('select[id$="-menu"]').change(function() {
+        var formsetContainer = $('#formset-container');
+        var totalForms = $('#id_form-TOTAL_FORMS');
+        
+        $('#add-form-btn').click(function() {
+            var formCount = parseInt(totalForms.val());
+            var newForm = formsetContainer.children().last().clone(false); // Clonamos el último formulario
+            var regex = new RegExp('form-' + (formCount - 1), 'g');
+            
+            newForm.html(newForm.html().replace(regex, 'form-' + formCount)); // Actualizamos los índices en los nombres y IDs
+            newForm.find('input, select').val(''); // Limpiamos los valores de los campos
+            
+            formsetContainer.append(newForm);
+            totalForms.val(formCount + 1); // Incrementamos el número total de formularios
+        });
+
+        formsetContainer.on('click', '.remove-form-btn', function() {
+            if (formsetContainer.children().length > 1) {
+                $(this).closest('.detalle-pedido').remove();
+                totalForms.val(parseInt(totalForms.val()) - 1);
+            } else {
+                alert("No puedes eliminar este formulario hasta que agregues otro plato.");
+            }
+        });
+
+        formsetContainer.on('change', 'select[id$="-menu"]', function() {
             var platoId = $(this).val();
             var precioField = $(this).closest('.detalle-pedido').find('input[id$="-precio_unitario"]');
 
@@ -56,3 +83,4 @@
 </script>
 
 {% endblock %}
+

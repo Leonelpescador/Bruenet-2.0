@@ -53,6 +53,7 @@ from .models import Pedido, DetallePedido, Mesa
 from .forms import PedidoForm, DetallePedidoForm, ModificarPedidoForm
 from django.contrib.auth.decorators import login_required
 
+
 @login_required
 def crear_pedido(request, mesa_id):
     mesa = get_object_or_404(Mesa, id=mesa_id)
@@ -63,7 +64,7 @@ def crear_pedido(request, mesa_id):
         pedido_form = PedidoForm(request.POST)
         formset = PedidoFormSet(request.POST)
         if pedido_form.is_valid() and formset.is_valid():
-            
+            # Guardar el pedido inicialmente sin el total
             pedido = pedido_form.save(commit=False)
             pedido.usuario = request.user
             pedido.mesa = mesa
@@ -74,7 +75,7 @@ def crear_pedido(request, mesa_id):
             formset.save()
             
             
-            pedido.total = sum(item.subtotal for item in pedido.detallepedido_set.all())
+            pedido.total = sum(item.subtotal for item in pedido.detalles.all())  
             pedido.save()  
             
             messages.success(request, 'Pedido creado con éxito.')
