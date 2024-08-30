@@ -92,11 +92,21 @@
         .table-status .table-card.reserved {
             border-left: 5px solid #f39c12;
         }
+        /* Estilos para el botón de WhatsApp */
+        .whatsapp-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .whatsapp-button img {
+            width: 60px;
+            height: 60px;
+        }
     </style>
 </head>
 <body>
 
-    
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">Restaurante BRUNET</a>
@@ -136,14 +146,14 @@
                     <div class="table-card {% if mesa.estado == 'disponible' %}available{% elif mesa.estado == 'ocupada' %}occupied{% else %}reserved{% endif %}">
                         <h5>Mesa {{ mesa.numero_mesa }}</h5>
                         <p>Capacidad: {{ mesa.capacidad }} personas</p>
-                        <p>Estado: {{ mesa.get_estado_display }}</p>
+                        <p>{{ mesa.get_estado_display }}</p>
                     </div>
                 </div>
             {% endfor %}
         </div>
     </section>
 
-    
+    <!-- Menú -->
     <section id="menu" class="container my-5">
         <h2 class="text-center my-4">Nuestro Menú</h2>
         <div class="row">
@@ -166,6 +176,14 @@
             {% endfor %}
         </div>
     </section>
+
+    <!-- Botón de WhatsApp -->
+    <div class="whatsapp-button">
+        <a href="https://wa.me/3875795436" target="_blank">
+            <img src="{% static 'images/whatsapp-icon.png' %}" alt="WhatsApp">
+        </a>
+    </div>
+
     <footer class="text-center py-4">
         <p>&copy; 2024 Restaurante Moderno. Todos los derechos reservados.</p>
     </footer>
