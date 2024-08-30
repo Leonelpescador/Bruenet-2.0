@@ -72,6 +72,8 @@ class Pedido(models.Model):
     def __str__(self):
         return f'Pedido {self.id}'
 
+
+
 class DetallePedido(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE)
     menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
@@ -82,6 +84,10 @@ class DetallePedido(models.Model):
     def save(self, *args, **kwargs):
         self.subtotal = self.cantidad * self.precio_unitario
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.menu.nombre_plato} - {self.cantidad} unidades'
+
 
 
 

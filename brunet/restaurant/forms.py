@@ -15,17 +15,25 @@ class CierreCajaForm(forms.ModelForm):
         model = Caja
         fields = ['total_final']
 
-# Formulario para Pedido
+
+
+#pedido 
 class PedidoForm(forms.ModelForm):
     class Meta:
         model = Pedido
         fields = ['usuario', 'mesa', 'total', 'estado']  # Incluye campos adicionales necesarios
 
 # Formulario para Modificar Pedido
+from django import forms
+from .models import Pedido
+
 class ModificarPedidoForm(forms.ModelForm):
     class Meta:
         model = Pedido
-        fields = ['usuario', 'mesa', 'estado', 'total']  
+        fields = ['usuario', 'mesa', 'estado', 'total']
+
+
+
 
 # Formulario para Pago
 class PagoForm(forms.ModelForm):
@@ -117,7 +125,23 @@ class PedidoForm(forms.ModelForm):
         model = Pedido
         fields = ['mesa', 'estado']  
 
+
+
+
+
+
+from .models import DetallePedido, Menu
+
 class DetallePedidoForm(forms.ModelForm):
+    menu = forms.ModelChoiceField(
+        queryset=Menu.objects.filter(disponible=True),
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = DetallePedido
-        fields = ['menu', 'cantidad', 'precio_unitario'] 
+        fields = ['menu', 'cantidad', 'precio_unitario']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['precio_unitario'].widget.attrs['class'] = 'form-control'

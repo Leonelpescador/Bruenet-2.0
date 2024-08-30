@@ -1,3 +1,4 @@
+from .forms import ModificarPedidoForm  
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -33,7 +34,7 @@ def home(request):
     return render(request, 'home.html', context)
 
 
-# Creación de Pedido
+# Creación de Pedido aca comienza
 from .models import DetallePedido
 from .forms import PedidoForm, DetallePedidoForm
 from django.forms import inlineformset_factory
@@ -44,38 +45,54 @@ from .models import Pedido, DetallePedido
 # Formset para DetallePedido
 DetallePedidoFormSet = inlineformset_factory(Pedido, DetallePedido, form=DetallePedidoForm, extra=1)
 
+
+from django.forms import inlineformset_factory
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import Pedido, DetallePedido, Mesa
+from .forms import PedidoForm, DetallePedidoForm, ModificarPedidoForm
+from django.contrib.auth.decorators import login_required
+
 @login_required
 def crear_pedido(request, mesa_id):
     mesa = get_object_or_404(Mesa, id=mesa_id)
+    pedidos_activos = Pedido.objects.filter(estado__in=['pendiente', 'preparando', 'servido']).exists()
     PedidoFormSet = inlineformset_factory(Pedido, DetallePedido, form=DetallePedidoForm, extra=1)
     
     if request.method == 'POST':
         pedido_form = PedidoForm(request.POST)
         formset = PedidoFormSet(request.POST)
         if pedido_form.is_valid() and formset.is_valid():
+            
             pedido = pedido_form.save(commit=False)
             pedido.usuario = request.user
             pedido.mesa = mesa
+            pedido.total = 0  
             pedido.save()
             
             formset.instance = pedido
             formset.save()
             
+            
             pedido.total = sum(item.subtotal for item in pedido.detallepedido_set.all())
-            pedido.save()
+            pedido.save()  
             
             messages.success(request, 'Pedido creado con éxito.')
-            return redirect('pedido')
+            return redirect('pedidos_activos')
     else:
         pedido_form = PedidoForm(initial={'mesa': mesa})
         formset = PedidoFormSet()
     
-    return render(request, 'pedido/crear_pedido.html', {'pedido_form': pedido_form, 'formset': formset, 'mesa': mesa})
+    return render(request, 'pedido/crear_pedido.html', {
+        'pedido_form': pedido_form,
+        'formset': formset,
+        'mesa': mesa,
+        'pedidos_activos': pedidos_activos,
+    })
 
 
-
-# Modificación de Pedido
 @login_required
+
 def modificar_pedido(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
     PedidoFormSet = inlineformset_factory(Pedido, DetallePedido, form=DetallePedidoForm, extra=0)
@@ -100,8 +117,6 @@ def modificar_pedido(request, pedido_id):
     
     return render(request, 'pedido/modificar_pedido.html', {'pedido_form': pedido_form, 'formset': formset, 'pedido': pedido})
 
-
-# Eliminación de Pedido
 @login_required
 def eliminar_pedido(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
@@ -113,14 +128,26 @@ def eliminar_pedido(request, pedido_id):
     
     return render(request, 'pedido/eliminar_pedido.html', {'pedido': pedido})
 
-#Pedidos activos.
 @login_required
 def pedidos_activos(request):
+    
     pedidos = Pedido.objects.filter(estado__in=['pendiente', 'preparando', 'servido'])
     return render(request, 'pedido/pedidos_activos.html', {'pedidos': pedidos})
 
+from django.http import JsonResponse
+from .models import Menu
+def obtener_precio_plato(request):
+    menu_id = request.GET.get('menu_id')
+    if menu_id:
+        try:
+            plato = Menu.objects.get(id=menu_id)
+            return JsonResponse({'precio': plato.precio})
+        except Menu.DoesNotExist:
+            return JsonResponse({'error': 'Plato no encontrado'}, status=404)
+    return JsonResponse({'error': 'Solicitud inválida'}, status=400)
 
 
+#fin pedidos
 
 # Creación de Pago
 @login_required
@@ -170,7 +197,7 @@ def reservas(request):
 
 # Creación de Reserva
 
-@login_required
+
 @login_required
 def crear_reserva(request):
     if request.method == 'POST':

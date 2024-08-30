@@ -2,13 +2,37 @@
 
 {% block content %}
 <h1>Pedidos Activos</h1>
-<ul>
-    {% for pedido in pedidos %}
-    <li>
-        Mesa {{ pedido.mesa.numero_mesa }} - Estado: {{ pedido.estado }} - Total: ${{ pedido.total }}
-        <a href="{% url 'modificar_pedido' pedido.id %}" class="btn btn-warning">Modificar</a>
-        <a href="{% url 'eliminar_pedido' pedido.id %}" class="btn btn-danger">Eliminar</a>
-    </li>
-    {% endfor %}
-</ul>
+
+{% if pedidos %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Mesa</th>
+                <th>Estado</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pedido in pedidos %}
+                <tr>
+                    <td>{{ pedido.id }}</td>
+                    <td>{{ pedido.mesa.numero_mesa }}</td>
+                    <td>{{ pedido.estado }}</td>
+                    <td>{{ pedido.total }}</td>
+                    <td>
+                        <a href="{% url 'modificar_pedido' pedido.id %}" class="btn btn-warning">Modificar</a>
+                        <a href="{% url 'eliminar_pedido' pedido.id %}" class="btn btn-danger">Eliminar</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <div class="alert alert-info" role="alert">
+        No hay pedidos activos en este momento.
+    </div>
+{% endif %}
+
 {% endblock %}

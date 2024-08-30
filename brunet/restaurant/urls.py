@@ -25,7 +25,8 @@ from .views import (
     crear_compra,  
     compras,
     editar_compra,
-    eliminar_compra
+    eliminar_compra,
+    obtener_precio_plato
 )
 
 urlpatterns =[
@@ -41,6 +42,7 @@ urlpatterns =[
     path('pedido/crear/<int:mesa_id>/', views.crear_pedido, name='crear_pedido'),
     path('pedido/modificar/<int:pedido_id>/', views.modificar_pedido, name='modificar_pedido'),
     path('pedido/eliminar/<int:pedido_id>/', views.eliminar_pedido, name='eliminar_pedido'),
+    path('obtener_precio_plato/', obtener_precio_plato, name='obtener_precio_plato'),
 
 
     # Pago 

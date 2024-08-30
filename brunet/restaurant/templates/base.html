@@ -110,6 +110,7 @@
         <nav>
             <ul>
                 <li class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}"><a href="{% url 'home' %}">Inicio</a></li>
+                <li class="{% if request.resolver_match.url_name == 'pedidos_activos' %}active{% endif %}"><a href="{% url 'pedidos_activos' %}">Pedidos</a></li>
                 <li class="{% if request.resolver_match.url_name == 'reservas' %}active{% endif %}"><a href="{% url 'reservas' %}">Reservas</a></li>
                 <li class="{% if request.resolver_match.url_name == 'listar_menu' %}active{% endif %}"><a href="{% url 'listar_menu' %}">Menú</a></li>
                 <li class="{% if request.resolver_match.url_name == 'lista_mesas' %}active{% endif %}"><a href="{% url 'lista_mesas' %}">Mesas</a></li> 
