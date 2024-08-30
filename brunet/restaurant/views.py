@@ -38,6 +38,12 @@ from .models import DetallePedido
 from .forms import PedidoForm, DetallePedidoForm
 from django.forms import inlineformset_factory
 
+from django.forms import inlineformset_factory
+from .models import Pedido, DetallePedido
+
+# Formset para DetallePedido
+DetallePedidoFormSet = inlineformset_factory(Pedido, DetallePedido, form=DetallePedidoForm, extra=1)
+
 @login_required
 def crear_pedido(request, mesa_id):
     mesa = get_object_or_404(Mesa, id=mesa_id)
@@ -59,12 +65,13 @@ def crear_pedido(request, mesa_id):
             pedido.save()
             
             messages.success(request, 'Pedido creado con éxito.')
-            return redirect('home')
+            return redirect('pedido')
     else:
         pedido_form = PedidoForm(initial={'mesa': mesa})
         formset = PedidoFormSet()
     
     return render(request, 'pedido/crear_pedido.html', {'pedido_form': pedido_form, 'formset': formset, 'mesa': mesa})
+
 
 
 # Modificación de Pedido
@@ -109,9 +116,8 @@ def eliminar_pedido(request, pedido_id):
 #Pedidos activos.
 @login_required
 def pedidos_activos(request):
-    pedidos = Pedido.objects.filter(estado__in=['pendiente', 'preparando'])  # Filtra según los estados que consideres activos
+    pedidos = Pedido.objects.filter(estado__in=['pendiente', 'preparando', 'servido'])
     return render(request, 'pedido/pedidos_activos.html', {'pedidos': pedidos})
-
 
 
 

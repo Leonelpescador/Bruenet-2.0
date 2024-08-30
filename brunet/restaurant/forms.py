@@ -115,9 +115,9 @@ from .models import Pedido, DetallePedido
 class PedidoForm(forms.ModelForm):
     class Meta:
         model = Pedido
-        fields = ['mesa', 'estado']  # usuario se asignará automáticamente, y el total se calculará
+        fields = ['mesa', 'estado']  
 
 class DetallePedidoForm(forms.ModelForm):
     class Meta:
         model = DetallePedido
-        fields = ['menu', 'cantidad']
+        fields = ['menu', 'cantidad', 'precio_unitario'] 

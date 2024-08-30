@@ -36,15 +36,18 @@ urlpatterns =[
     path('cliente/', views.cliente, name='cliente'),
     
     
+    #pedidos
     path('pedido/', views.pedidos_activos, name='pedidos_activos'),
     path('pedido/crear/<int:mesa_id>/', views.crear_pedido, name='crear_pedido'),
     path('pedido/modificar/<int:pedido_id>/', views.modificar_pedido, name='modificar_pedido'),
     path('pedido/eliminar/<int:pedido_id>/', views.eliminar_pedido, name='eliminar_pedido'),
 
+
     # Pago 
     path('pago/crear/<int:pedido_id>/', views.crear_pago, name='crear_pago'),
     path('pago/modificar/<int:pago_id>/', views.modificar_pago, name='modificar_pago'),
     path('pago/eliminar/<int:pago_id>/', views.eliminar_pago, name='eliminar_pago'),
+
 
     # Reserva 
     path('reserva/crear/', views.crear_reserva, name='crear_reserva'),
@@ -52,11 +55,13 @@ urlpatterns =[
     path('reserva/eliminar/<int:reserva_id>/', views.eliminar_reserva, name='eliminar_reserva'),
     path('reservas/', views.reservas, name='reservas'),
 
+
     # Inventario 
     path('inventario/', views.inventario, name='inventario'),
     path('inventario/crear/', views.crear_inventario, name='crear_inventario'),
     path('inventario/editar/<int:pk>/', views.editar_inventario, name='editar_inventario'),
     path('inventario/eliminar/<int:pk>/', views.eliminar_inventario, name='eliminar_inventario'),
+    
     
     # Proveedor
     path('proveedores/', views.proveedores, name='proveedores'),
@@ -64,11 +69,13 @@ urlpatterns =[
     path('proveedores/editar/<int:pk>/', views.editar_proveedor, name='editar_proveedor'),
     path('proveedores/eliminar/<int:pk>/', views.eliminar_proveedor, name='eliminar_proveedor'),
     
+    
     # Compra 
     path('compra/', views.compras, name='compras'),
     path('compra/crear/', views.crear_compra, name='crear_compra'),  
     path('compra/editar/<int:pk>/', views.editar_compra, name='editar_compra'),
     path('compra/eliminar/<int:pk>/', views.eliminar_compra, name='eliminar_compra'),
+    
     
     # Mesa 
     path('mesa/crear/', views.crear_mesa, name='crear_mesa'),
@@ -76,11 +83,13 @@ urlpatterns =[
     path('mesa/eliminar/<int:mesa_id>/', views.eliminar_mesa, name='eliminar_mesa'),
     path('mesa/editar/<int:pk>/', views.editar_mesa, name='editar_mesa'),
     
+    
     # Caja 
     path('caja/apertura/', views.apertura_caja, name='apertura_caja'),
     path('caja/consulta/<int:caja_id>/', views.consulta_caja, name='consulta_caja'),
     path('caja/cierre/', views.cierre_caja, name='cierre_caja'),
     path('caja/registrar_pago/<int:pedido_id>/', views.registrar_pago, name='registrar_pago'),
+    
     
     # Menu "Platos"
     path('menu/listar/', views.listar_menu, name='listar_menu'),
@@ -89,7 +98,8 @@ urlpatterns =[
     path('menu/eliminar/<int:menu_id>/', views.eliminar_menu, name='eliminar_menu'),
     path('menu/cambiar-disponibilidad/<int:menu_id>/', views.cambiar_disponibilidad_menu, name='cambiar_disponibilidad_menu'),
     
-    # Pago (duplicado?)
+    
+    # Caja
     path('caja/pago/crear/', views.crear_pago, name='crear_pago'),
     path('caja/pago/modificar/<int:pago_id>/', views.modificar_pago, name='modificar_pago'),
     path('caja/pago/eliminar/<int:pago_id>/', views.eliminar_pago, name='eliminar_pago'),
