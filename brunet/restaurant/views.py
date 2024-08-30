@@ -422,14 +422,20 @@ def apertura_caja(request):
 def consulta_caja(request, caja_id):
     caja = get_object_or_404(Caja, id=caja_id)
     transacciones = TransaccionCaja.objects.filter(caja=caja)
-    pagos = Pago.objects.filter(pedido__caja=caja)  # Asegúrate que Pago tiene un campo que relaciona con Caja a través de Pedido
+
+    # Filtrar pagos asociados a los pedidos que se realizaron durante la apertura de la caja si lo sacan le va dar error 
+    pedidos_en_caja = Pedido.objects.filter(fecha_pedido__gte=caja.apertura, fecha_pedido__lte=caja.cierre if caja.cierre else timezone.now())
+    pagos = Pago.objects.filter(pedido__in=pedidos_en_caja)
+    
     monto_total = pagos.aggregate(total=Sum('monto'))['total'] or 0
+    
     return render(request, 'caja/consulta_caja.html', {
         'caja': caja,
         'transacciones': transacciones,
         'monto_total': monto_total,
         'pagos': pagos
     })
+
 
 # Cierre de Caja
 @login_required
@@ -462,7 +468,13 @@ def registrar_pago(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id, estado='pendiente')
     if request.method == 'POST':
         metodo_pago = request.POST.get('metodo_pago')
-        pago = Pago(pedido=pedido, metodo_pago=metodo_pago, monto=pedido.total)
+        comprobante = request.FILES.get('comprobante')  # Obtener el archivo adjunto
+        pago = Pago(
+            pedido=pedido,
+            metodo_pago=metodo_pago,
+            monto=pedido.total,
+            comprobante=comprobante  # Asignar el archivo al campo comprobante
+        )
         pago.save()
         pedido.estado = 'pagado'
         pedido.save()
@@ -478,6 +490,7 @@ def registrar_pago(request, pedido_id):
         return redirect('consulta_caja', caja_id=caja_abierta.id)
     
     return render(request, 'caja/registrar_pago.html', {'pedido': pedido, 'caja': caja_abierta})
+
 
 
 

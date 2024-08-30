@@ -1,47 +1,77 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Pago</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="{% static 'js/tu_archivo_js.js' %}"></script>
-</head>
-<body>
-    <div class="container mt-5">
-        <h1>Registrar Pago</h1>
-        
-        <form method="post">
-            {% csrf_token %}
-            
-            <div class="mb-3">
-                <label for="metodo_pago" class="form-label">Método de Pago</label>
-                <select name="metodo_pago" id="metodo_pago" class="form-select">
-                    <option value="efectivo">Efectivo</option>
-                    <option value="tarjeta">Tarjeta</option>
-                    <option value="transferencia">Transferencia</option>
-                </select>
-            </div>
+{% extends 'base.html' %}
 
-            <div class="mb-3">
-                <label for="monto_total" class="form-label">Monto Total</label>
-                <input type="text" id="monto_total" class="form-control" value="{{ pedido.total }}" readonly>
-            </div>
+{% block content %}
+<h1>Registrar Pago para el Pedido {{ pedido.id }}</h1>
 
-            <div class="mb-3" id="efectivo_section" style="display:none;">
-                <label for="monto_pagado" class="form-label">Monto Pagado</label>
-                <input type="number" id="monto_pagado" class="form-control">
-            </div>
+<div class="form-container" style="max-width: 600px; margin: 0 auto;">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="metodo_pago">Método de Pago</label>
+            <select id="metodo_pago" name="metodo_pago" class="form-control">
+                <option value="efectivo">Efectivo</option>
+                <option value="tarjeta">Tarjeta</option>
+                <option value="transferencia">Transferencia</option>
+            </select>
+        </div>
 
-            <div class="mb-3" id="vuelto_section" style="display:none;">
-                <label for="vuelto" class="form-label">Vuelto</label>
-                <input type="text" id="vuelto" class="form-control" readonly>
+        <!-- Si selecciona la opción de efectivo, se va a desplegar un menú para calcular el cambio -->
+        <div id="efectivo_section" style="display: none; margin-top: 10px;">
+            <div class="form-group">
+                <label for="monto_pagado">Monto Pagado</label>
+                <input type="number" id="monto_pagado" name="monto_pagado" class="form-control" min="0">
             </div>
-            
-            <button type="submit" class="btn btn-primary">Registrar Pago</button>
-        </form>
-    </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+            <div class="form-group" id="cambio_section" style="display: none; margin-top: 10px;">
+                <label for="cambio">Cambio</label>
+                <input type="text" id="cambio" name="cambio" class="form-control" readonly>
+            </div>
+        </div>
+
+        <!-- Si selecciona transferencia, habilita la opción de subir una foto o PDF -->
+        <div id="transferencia_section" style="display: none; margin-top: 10px;">
+            <div class="form-group">
+                <label for="comprobante">Adjuntar Comprobante</label>
+                <input type="file" id="comprobante" name="comprobante" class="form-control">
+            </div>
+        </div>
+
+        <input type="hidden" id="monto_total" value="{{ pedido.total }}">
+
+        <button type="submit" class="btn btn-primary">Registrar Pago</button>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const metodoPago = document.getElementById('metodo_pago');
+    const montoPagado = document.getElementById('monto_pagado');
+    const cambio = document.getElementById('cambio'); 
+    const montoTotal = document.getElementById('monto_total').value;
+
+    metodoPago.addEventListener('change', function () {
+        if (metodoPago.value === 'efectivo') {
+            document.getElementById('efectivo_section').style.display = 'block';
+            document.getElementById('cambio_section').style.display = 'block';
+        } else {
+            document.getElementById('efectivo_section').style.display = 'none';
+            document.getElementById('cambio_section').style.display = 'none';
+        }
+
+        if (metodoPago.value === 'transferencia') {
+            document.getElementById('transferencia_section').style.display = 'block';
+        } else {
+            document.getElementById('transferencia_section').style.display = 'none';
+        }
+    });
+
+    montoPagado.addEventListener('input', function () {
+        const pagado = parseFloat(montoPagado.value) || 0;
+        const total = parseFloat(montoTotal) || 0;
+        cambio.value = (pagado - total).toFixed(2);
+    });
+});
+</script>
+{% endblock %}

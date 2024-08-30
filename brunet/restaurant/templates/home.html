@@ -3,8 +3,6 @@
 {% block content %}
 <h1>Mesas del Restaurante</h1>
 
-
-
 <div class="mesas">
     {% for mesa in mesas %}
     <div class="mesa 
@@ -19,35 +17,42 @@
         <div class="menu-desplegable">
             <a href="{% url 'editar_mesa' mesa.id %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Cambiar estado</a>
             
-            <a href="{% url 'crear_reserva' %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Crear Reserva</a>
+            {% if caja_abierta %}
+                <a href="{% url 'crear_reserva' %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Crear Reserva</a>
 
-            <a href="{% url 'crear_pedido' mesa_id=mesa.id %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Crear Pedido</a>
-
+                <a href="{% url 'crear_pedido' mesa_id=mesa.id %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Crear Pedido</a>
+            {% else %}
+                <a href="#" class="btn" style="background-color: #ccc; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: not-allowed; font-size: 16px; text-align: center; text-decoration: none; display: inline-block;">Caja Cerrada</a>
+            {% endif %}
+            
             <a href="{% url 'pedidos_activos' %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Ver Pedidos</a>
-
-
-
-            
-
-
-            
-            
-            
-
         </div>
     </div>
     {% endfor %}
 </div>
-{% if not caja_abierta %}
-    <div class="alert alert-warning">
-        No hay una caja abierta actualmente.
-    </div>
-{% endif %}
-{% if caja_abierta %}
-<a href="{% url 'consulta_caja' caja_abierta.id %}">Consulta de Caja</a>
-{% else %}
-<a href="{% url 'apertura_caja' %}">Abrir Caja</a>
-{% endif %}
+
+<div class="caja-container" style="margin-top: 20px;">
+    {% if not caja_abierta %}
+        <div class="alert alert-warning">
+            No hay una caja abierta actualmente.
+        </div>
+        <a href="{% url 'apertura_caja' %}" class="btn btn-success">Abrir Caja</a>
+    {% else %}
+        <div class="alert alert-success">
+            Caja abierta por {{ caja_abierta.usuario.username }} desde {{ caja_abierta.apertura|date:"d/m/Y H:i" }}
+        </div>
+        
+        {% if caja_abierta.transacciones.exists %}
+            <a href="{% url 'consulta_caja' caja_abierta.id %}" class="btn btn-primary">Consultar Caja</a>
+        {% else %}
+            <div class="alert alert-info">
+                Aún no hay movimientos registrados en esta caja.
+            </div>
+        {% endif %}
+        
+        <a href="{% url 'cierre_caja' %}" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que deseas cerrar la caja?');">Cerrar Caja</a>
+    {% endif %}
+</div>
 
 {% endblock %}
 

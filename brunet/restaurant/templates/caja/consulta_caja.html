@@ -1,47 +1,25 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block content %}
-  <div class="container my-5">
-    <h2 class="text-center mb-4">Consulta de Caja</h2>
-    
-    {% if messages %}
-      <div class="container mt-4">
-        {% for message in messages %}
-          <div class="alert alert-{{ message.tags }}">
-            {{ message }}
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-    
-    <h3>Resumen de Caja</h3>
-    <p><strong>Monto Total:</strong> ${{ monto_total }}</p>
-    
-    <h3>Pagos Realizados</h3>
-    
-    {% if pagos %}
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>ID de Pago</th>
-            <th>Monto</th>
-            <th>Fecha y Hora</th>
-            <th>Descripción</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for pago in pagos %}
-          <tr>
-            <td>{{ pago.id }}</td>
-            <td>${{ pago.monto }}</td>
-            <td>{{ pago.fecha_hora }}</td>
-            <td>{{ pago.descripcion }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      <p>No se han registrado pagos en esta caja.</p>
-    {% endif %}
-  </div>
+<h1>Consulta de Caja</h1>
+<h3>Caja abierta por: {{ caja.usuario.username }}</h3>
+<p>Apertura: {{ caja.apertura }}</p>
+{% if caja.cierre %}
+    <p>Cierre: {{ caja.cierre }}</p>
+{% endif %}
+
+<h4>Transacciones:</h4>
+<ul>
+    {% for transaccion in transacciones %}
+        <li>{{ transaccion.tipo }} - ${{ transaccion.monto }} - {{ transaccion.descripcion }} ({{ transaccion.fecha }})</li>
+    {% endfor %}
+</ul>
+
+<h4>Total Ingresado: ${{ monto_total }}</h4>
+<h4>Pagos:</h4>
+<ul>
+    {% for pago in pagos %}
+        <li>Pago de Pedido ID {{ pago.pedido.id }} - Monto: ${{ pago.monto }} - Método: {{ pago.metodo_pago }}</li>
+    {% endfor %}
+</ul>
 {% endblock %}
