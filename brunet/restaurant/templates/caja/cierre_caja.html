@@ -10,11 +10,17 @@
         <strong>Total Final:</strong> ${{ total_final }}
     </div>
     
+    {% if not caja.cierre %}
     <form method="post">
         {% csrf_token %}
         <input type="hidden" name="total_final" value="{{ total_final }}">
         <button type="submit" class="btn btn-primary">Cerrar Caja</button>
     </form>
+    {% else %}
+    <div class="alert alert-success">
+        La caja ha sido cerrada exitosamente.
+    </div>
+    {% endif %}
 
     <hr>
 
@@ -40,7 +46,10 @@
         </tbody>
     </table>
 
+    {% if caja.cierre %}
     <a href="{% url 'descargar_reporte_caja' caja.id %}" class="btn btn-secondary">Descargar Reporte PDF</a>
+    <a href="{% url 'home' %}" class="btn btn-secondary">Volver a Home</a>
+    {% endif %}
 
 </div>
 {% endblock %}

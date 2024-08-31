@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iniciar Sesión - BRUNET</title>
-    {% load static %} <!--si sacan esto no va cargar la imagen. -->
+    {% load static %} <!-- Asegúrate de que esta línea esté correctamente incluida -->
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -15,6 +15,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            overflow: hidden;
         }
 
         .login-container {
@@ -22,6 +23,16 @@
             justify-content: center;
             align-items: center;
             width: 100%;
+            opacity: 0;
+            transform: scale(0.8);
+            animation: fadeInAndScale 2s ease forwards; /* Animación suave de aparición y escalado */
+        }
+
+        @keyframes fadeInAndScale {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .login-box {
@@ -118,4 +129,3 @@
     </div>
 </body>
 </html>
-
