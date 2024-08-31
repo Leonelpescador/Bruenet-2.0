@@ -107,6 +107,7 @@
 </head>
 <body>
 
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">Restaurante BRUNET</a>
@@ -129,7 +130,7 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
+   
     <section class="hero">
         <div>
             <h1>Bienvenido a Nuestro Restaurante</h1>
@@ -137,7 +138,7 @@
         </div>
     </section>
 
-    <!-- Mesas Disponibles -->
+    
     <section id="mesas" class="container table-status">
         <h2 class="text-center my-4">Mesas Disponibles</h2>
         <div class="row">
@@ -153,33 +154,36 @@
         </div>
     </section>
 
-    <!-- Menú -->
+    
     <section id="menu" class="container my-5">
         <h2 class="text-center my-4">Nuestro Menú</h2>
         <div class="row">
-            {% for item in menu_items %}
-                <div class="col-md-4">
-                    <div class="card menu-card">
-                        {% if item.imagen %}
-                            <img src="{{ item.imagen.url }}" class="card-img-top" alt="{{ item.nombre_plato }}">
-                        {% else %}
-                            <img src="/static/images/default_image.png" class="card-img-top" alt="Imagen por defecto">
-                            <p class="card-img-top text-center text-muted">El Chef aún no decide que foto poner.</p>
-                        {% endif %}
-                        <div class="card-body">
-                            <h5 class="card-title menu-card-title">{{ item.nombre_plato }}</h5>
-                            <p class="card-text">{{ item.descripcion }}</p>
-                            <p class="card-text"><strong>${{ item.precio }}</strong></p>
+            {% for categoria, items in menu_items.items %}
+                <h3 class="text-center">{{ categoria }}</h3>
+                {% for item in items %}
+                    <div class="col-md-4">
+                        <div class="card menu-card">
+                            {% if item.imagen %}
+                                <img src="{{ item.imagen.url }}" class="card-img-top" alt="{{ item.nombre_plato }}">
+                            {% else %}
+                                <img src="/static/images/default_image.png" class="card-img-top" alt="Imagen por defecto">
+                                <p class="card-img-top text-center text-muted">El Chef aún no decide que foto poner.</p>
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title menu-card-title">{{ item.nombre_plato }}</h5>
+                                <p class="card-text">{{ item.descripcion }}</p>
+                                <p class="card-text"><strong>${{ item.precio }}</strong></p>
+                            </div>
                         </div>
                     </div>
-                </div>
+                {% endfor %}
             {% endfor %}
         </div>
     </section>
 
-    <!-- Botón de WhatsApp -->
-    <div class="whatsapp-button">
-        <a href="https://wa.me/3874047020" target="_blank">
+    
+    <div class="whatsapp-button"> 
+        <a href="https://wa.me/3875795436" target="_blank">    
             <img src="{% static 'images/whatsapp-icon.png' %}" alt="WhatsApp">
         </a>
     </div>

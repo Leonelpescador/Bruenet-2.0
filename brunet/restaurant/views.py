@@ -606,16 +606,22 @@ class CustomLoginView(auth_views.LoginView):
 
 #pagina para clinetes.
 from django.shortcuts import render
-from .models import Mesa, Menu  
+from .models import Categoria, Menu, Mesa
 
 def cliente(request):
-    mesas = Mesa.objects.all() 
-    menu_items = Menu.objects.all()  
+    # Obtener todas las mesas
+    mesas = Mesa.objects.all()
+
+    # Obtener todas las categorías y organizar los ítems de menú por categoría, filtrando solo los disponibles
+    categorias = Categoria.objects.all()
+    menu_items = {categoria.nombre: Menu.objects.filter(categoria=categoria, disponible=True) for categoria in categorias}
 
     return render(request, 'restaurant/cliente.html', {
         'mesas': mesas,
+        'categorias': categorias,
         'menu_items': menu_items,
     })
+
 
 
 #Menu "Platos."
