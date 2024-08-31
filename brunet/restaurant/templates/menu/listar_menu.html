@@ -10,6 +10,7 @@
         <thead>
             <tr>
                 <th>Nombre del Plato</th>
+                <th>Categoría</th>  <!-- Nueva columna para la categoría -->
                 <th>Descripción</th>
                 <th>Precio</th>
                 <th>Disponible</th>
@@ -20,6 +21,7 @@
             {% for item in menu_items_disponibles %}
             <tr>
                 <td>{{ item.nombre_plato }}</td>
+                <td>{{ item.categoria.nombre }}</td>  <!-- Mostrar la categoría -->
                 <td>{{ item.descripcion }}</td>
                 <td>${{ item.precio }}</td>
                 <td>{{ item.disponible|yesno:"Sí,No" }}</td>
@@ -38,6 +40,7 @@
         <thead>
             <tr>
                 <th>Nombre del Plato</th>
+                <th>Categoría</th> 
                 <th>Descripción</th>
                 <th>Precio</th>
                 <th>Disponible</th>
@@ -48,6 +51,7 @@
             {% for item in menu_items_no_disponibles %}
             <tr>
                 <td>{{ item.nombre_plato }}</td>
+                <td>{{ item.categoria.nombre }}</td>  
                 <td>{{ item.descripcion }}</td>
                 <td>${{ item.precio }}</td>
                 <td>{{ item.disponible|yesno:"Sí,No" }}</td>

@@ -40,14 +40,14 @@
         
         $('#add-form-btn').click(function() {
             var formCount = parseInt(totalForms.val());
-            var newForm = formsetContainer.children().last().clone(false); // Clonamos el último formulario
+            var newForm = formsetContainer.children().last().clone(false);
             var regex = new RegExp('form-' + (formCount - 1), 'g');
             
-            newForm.html(newForm.html().replace(regex, 'form-' + formCount)); // Actualizamos los índices en los nombres y IDs
-            newForm.find('input, select').val(''); // Limpiamos los valores de los campos
-            
+            newForm.html(newForm.html().replace(regex, 'form-' + formCount));
+            newForm.find('input, select').val('');
+
             formsetContainer.append(newForm);
-            totalForms.val(formCount + 1); // Incrementamos el número total de formularios
+            totalForms.val(formCount + 1);
         });
 
         formsetContainer.on('click', '.remove-form-btn', function() {
@@ -83,4 +83,3 @@
 </script>
 
 {% endblock %}
-

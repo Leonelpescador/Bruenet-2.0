@@ -4,7 +4,7 @@
 <h1>Pedidos Activos</h1>
 
 {% if pedidos %}
-    <table class="table">
+    <table class="table table-bordered table-hover">
         <thead>
             <tr>
                 <th>Mesa</th>
@@ -25,13 +25,28 @@
                             {% endfor %}
                         </ul>
                     </td>
-                    <td>{{ pedido.estado }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if pedido.estado == 'pendiente' %}
+                                bg-warning text-dark
+                            {% elif pedido.estado == 'preparando' %}
+                                bg-primary
+                            {% elif pedido.estado == 'servido' %}
+                                bg-success
+                            {% elif pedido.estado == 'pagado' %}
+                                bg-secondary
+                            {% endif %}
+                        ">
+                            {{ pedido.estado|capfirst }}
+                        </span>
+                    </td>
                     <td>${{ pedido.total }}</td>
                     <td>
-                        <a href="{% url 'modificar_pedido' pedido.id %}" class="btn btn-warning">Modificar</a>
-                        <a href="{% url 'eliminar_pedido' pedido.id %}" class="btn btn-danger">Eliminar</a>
-                        {% if pedido.estado == 'pendiente' %}<a href="{% url 'registrar_pago' pedido.id %}" class="btn btn-success">Registrar Pago</a>{% endif %}
-                        
+                        <a href="{% url 'modificar_pedido' pedido.id %}" class="btn btn-warning mb-1">Modificar</a>
+                        <a href="{% url 'eliminar_pedido' pedido.id %}" class="btn btn-danger mb-1">Eliminar</a>
+                        {% if pedido.estado == 'pendiente' %}
+                            <a href="{% url 'registrar_pago' pedido.id %}" class="btn btn-success">Registrar Pago</a>
+                        {% endif %}
                     </td>
                 </tr>
             {% endfor %}

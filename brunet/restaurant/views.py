@@ -55,40 +55,40 @@ from django.contrib.auth.decorators import login_required
 
 
 @login_required
+@login_required
 def crear_pedido(request, mesa_id):
     mesa = get_object_or_404(Mesa, id=mesa_id)
-    pedidos_activos = Pedido.objects.filter(estado__in=['pendiente', 'preparando', 'servido']).exists()
     PedidoFormSet = inlineformset_factory(Pedido, DetallePedido, form=DetallePedidoForm, extra=1)
-    
+
     if request.method == 'POST':
         pedido_form = PedidoForm(request.POST)
         formset = PedidoFormSet(request.POST)
+        
         if pedido_form.is_valid() and formset.is_valid():
-            # Guardar el pedido inicialmente sin el total
             pedido = pedido_form.save(commit=False)
             pedido.usuario = request.user
             pedido.mesa = mesa
-            pedido.total = 0  
             pedido.save()
-            
-            formset.instance = pedido
-            formset.save()
-            
-            
-            pedido.total = sum(item.subtotal for item in pedido.detalles.all())  
-            pedido.save()  
-            
+
+            # Guardar cada detalle del pedido
+            detalles = formset.save(commit=False)
+            for detalle in detalles:
+                detalle.pedido = pedido
+                detalle.save()
+
+            pedido.total = sum(detalle.subtotal for detalle in pedido.detalles.all())
+            pedido.save()
+
             messages.success(request, 'Pedido creado con éxito.')
             return redirect('pedidos_activos')
     else:
-        pedido_form = PedidoForm(initial={'mesa': mesa})
+        pedido_form = PedidoForm()
         formset = PedidoFormSet()
-    
+
     return render(request, 'pedido/crear_pedido.html', {
         'pedido_form': pedido_form,
         'formset': formset,
         'mesa': mesa,
-        'pedidos_activos': pedidos_activos,
     })
 
 
@@ -644,7 +644,7 @@ def crear_menu(request):
         form = MenuForm()
     return render(request, 'menu/crear_menu.html', {'form': form})
 
-@login_required
+
 
 
 

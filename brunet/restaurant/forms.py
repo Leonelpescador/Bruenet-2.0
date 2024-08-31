@@ -113,7 +113,7 @@ from .models import Menu
 class MenuForm(forms.ModelForm):
     class Meta:
         model = Menu
-        fields = ['nombre_plato', 'descripcion', 'precio', 'disponible', 'imagen']  
+        fields = ['nombre_plato', 'descripcion', 'precio', 'disponible', 'imagen', 'categoria']  
         
         
 #flujo de pedido por si tiene algun problema ver aca chicos.!

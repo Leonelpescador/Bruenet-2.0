@@ -46,22 +46,32 @@ class Mesa(models.Model):
         return f'Mesa {self.numero_mesa}'
 
 # Definición del modelo Menu
+from django.db import models
+
+class Categoria(models.Model):
+    nombre = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.nombre
+
 class Menu(models.Model):
     nombre_plato = models.CharField(max_length=200)
     descripcion = models.TextField(blank=True, null=True)
     precio = models.DecimalField(max_digits=9, decimal_places=2)
     disponible = models.BooleanField(default=True)
-    imagen = models.ImageField(upload_to='menu_images/', blank=True, null=True)  # Campo para la imagen del plato
+    imagen = models.ImageField(upload_to='menu_images/', blank=True, null=True)
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, related_name='menus')  # Nueva relación de categoría
 
     def __str__(self):
         return self.nombre_plato
 
+    
+    
+    
 class Pedido(models.Model):
     ESTADO_CHOICES = [
         ('pendiente', 'Pendiente'),
-        ('preparando', 'Preparando'),
-        ('servido', 'Servido'),
-        ('pagado', 'Pagado'),
+        
     ]
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     mesa = models.ForeignKey(Mesa, on_delete=models.CASCADE)
