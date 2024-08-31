@@ -54,6 +54,7 @@ from .forms import PedidoForm, DetallePedidoForm, ModificarPedidoForm
 from django.contrib.auth.decorators import login_required
 
 
+
 @login_required
 @login_required
 def crear_pedido(request, mesa_id):
@@ -63,7 +64,7 @@ def crear_pedido(request, mesa_id):
     if request.method == 'POST':
         pedido_form = PedidoForm(request.POST)
         formset = PedidoFormSet(request.POST)
-        
+
         if pedido_form.is_valid() and formset.is_valid():
             pedido = pedido_form.save(commit=False)
             pedido.usuario = request.user
@@ -71,11 +72,12 @@ def crear_pedido(request, mesa_id):
             pedido.save()
 
             # Guardar cada detalle del pedido
-            detalles = formset.save(commit=False)
-            for detalle in detalles:
-                detalle.pedido = pedido
-                detalle.save()
+            for form in formset:
+                detalle_pedido = form.save(commit=False)
+                detalle_pedido.pedido = pedido
+                detalle_pedido.save()
 
+            # Calcular el total del pedido
             pedido.total = sum(detalle.subtotal for detalle in pedido.detalles.all())
             pedido.save()
 
@@ -85,38 +87,47 @@ def crear_pedido(request, mesa_id):
         pedido_form = PedidoForm()
         formset = PedidoFormSet()
 
+    categorias = Categoria.objects.all()
+
     return render(request, 'pedido/crear_pedido.html', {
         'pedido_form': pedido_form,
         'formset': formset,
         'mesa': mesa,
+        'categorias': categorias,
     })
 
-
 @login_required
-
 def modificar_pedido(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
     PedidoFormSet = inlineformset_factory(Pedido, DetallePedido, form=DetallePedidoForm, extra=0)
-    
+
     if request.method == 'POST':
         pedido_form = ModificarPedidoForm(request.POST, instance=pedido)
         formset = PedidoFormSet(request.POST, instance=pedido)
-        
+
         if pedido_form.is_valid() and formset.is_valid():
             pedido_form.save()
             formset.save()
-            
+
             # Recalcular el total del pedido
-            pedido.total = sum(item.subtotal for item in pedido.detallepedido_set.all())
+            pedido.total = sum(detalle.subtotal for detalle in pedido.detalles.all())
             pedido.save()
-            
+
             messages.success(request, 'Pedido modificado con éxito.')
-            return redirect('home')
+            return redirect('pedidos_activos')
     else:
         pedido_form = ModificarPedidoForm(instance=pedido)
         formset = PedidoFormSet(instance=pedido)
-    
-    return render(request, 'pedido/modificar_pedido.html', {'pedido_form': pedido_form, 'formset': formset, 'pedido': pedido})
+
+    categorias = Categoria.objects.all()
+
+    return render(request, 'pedido/modificar_pedido.html', {
+        'pedido_form': pedido_form,
+        'formset': formset,
+        'pedido': pedido,
+        'categorias': categorias,
+    })
+
 
 @login_required
 def eliminar_pedido(request, pedido_id):
@@ -131,12 +142,13 @@ def eliminar_pedido(request, pedido_id):
 
 @login_required
 def pedidos_activos(request):
-    
     pedidos = Pedido.objects.filter(estado__in=['pendiente', 'preparando', 'servido'])
     return render(request, 'pedido/pedidos_activos.html', {'pedidos': pedidos})
 
+
 from django.http import JsonResponse
 from .models import Menu
+
 def obtener_precio_plato(request):
     menu_id = request.GET.get('menu_id')
     if menu_id:
@@ -622,15 +634,20 @@ from django.contrib.auth.decorators import login_required
 
 @login_required
 def listar_menu(request):
-    menu_items_disponibles = Menu.objects.filter(disponible=True)
+    # Agrupar los menús por categoría
+    categorias = Menu.objects.values_list('categoria__nombre', flat=True).distinct()
+    menu_categorias = {categoria: Menu.objects.filter(categoria__nombre=categoria, disponible=True) for categoria in categorias}
     menu_items_no_disponibles = Menu.objects.filter(disponible=False)
+
     return render(request, 'menu/listar_menu.html', {
-        'menu_items_disponibles': menu_items_disponibles,
+        'menu_categorias': menu_categorias,
         'menu_items_no_disponibles': menu_items_no_disponibles
     })
 
+from .models import Categoria
 @login_required
 def crear_menu(request):
+    categorias = Categoria.objects.all()  # Obtener todas las categorías
     if request.method == 'POST':
         form = MenuForm(request.POST, request.FILES)
         if form.is_valid():
@@ -639,43 +656,31 @@ def crear_menu(request):
             return redirect('listar_menu')
         else:
             messages.error(request, 'Error al guardar el menú. Verifica los datos ingresados.')
-            print(form.errors) 
     else:
         form = MenuForm()
-    return render(request, 'menu/crear_menu.html', {'form': form})
 
-
-
-
+    return render(request, 'menu/crear_menu.html', {'form': form, 'categorias': categorias})
 
 @login_required
 def editar_menu(request, menu_id):
     menu_item = get_object_or_404(Menu, id=menu_id)
+    categorias = Categoria.objects.all()  # Obtener todas las categorías
     
-    # Guardamos la referencia a la imagen actual
-    imagen_anterior = menu_item.imagen
-
     if request.method == 'POST':
         form = MenuForm(request.POST, request.FILES, instance=menu_item)
         
         if form.is_valid():
-            # Verificamos si se ha cargado una nueva imagen
-            if not request.FILES.get('imagen') and imagen_anterior:
-                form.instance.imagen = imagen_anterior
-
-            # Guardar solo si hay cambios en los campos
-            if form.has_changed():
-                form.save()
-                messages.success(request, 'Plato actualizado con éxito.')
-            else:
-                messages.info(request, 'No se detectaron cambios.')
-            
+            form.save()
+            messages.success(request, 'Plato actualizado con éxito.')
             return redirect('listar_menu')
     else:
         form = MenuForm(instance=menu_item)
     
-    return render(request, 'menu/editar_menu.html', {'form': form, 'menu': menu_item})
-
+    return render(request, 'menu/editar_menu.html', {
+        'form': form, 
+        'menu': menu_item,
+        'categorias': categorias  # Pasar las categorías al contexto
+    })
 
 @login_required
 def eliminar_menu(request, menu_id):
@@ -694,6 +699,19 @@ def cambiar_disponibilidad_menu(request, menu_id):
     messages.success(request, 'La disponibilidad del menú ha sido actualizada.')
     return redirect('listar_menu')
 
+from django.http import HttpResponse
+from .models import Menu
+
+def filtrar_platos_por_categoria(request):
+    categoria_id = request.GET.get('categoria_id')
+    if categoria_id:
+        platos = Menu.objects.filter(categoria_id=categoria_id, disponible=True)
+        opciones = ''.join([f'<option value="{plato.id}">{plato.nombre_plato}</option>' for plato in platos])
+        return HttpResponse(opciones)
+    return HttpResponse('<option value="">No hay platos disponibles</option>')
+
+
+#fin menu.
 
 
 #pagos.

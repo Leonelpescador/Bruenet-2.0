@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2 class="text-center">Editar Plato: {{ menu.nombre_plato }}</h2>
-<div class="container">
+<div class="container mt-5">
+    <h2 class="text-center">Editar Plato: {{ menu.nombre_plato }}</h2>
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="mb-3">
@@ -23,6 +23,16 @@
             <img src="{{ menu.imagen.url }}" alt="{{ menu.nombre_plato }}" class="img-thumbnail" style="max-width: 200px;">
             {% endif %}
             <input type="file" class="form-control" id="id_imagen" name="imagen">
+        </div>
+        <div class="mb-3">
+            <label for="id_categoria" class="form-label">Categoría</label>
+            <select class="form-control" id="id_categoria" name="categoria" required>
+                {% for categoria in categorias %}
+                    <option value="{{ categoria.id }}" {% if form.categoria.value == categoria.id %}selected{% endif %}>
+                        {{ categoria.nombre }}
+                    </option>
+                {% endfor %}
+            </select>
         </div>
         <div class="mb-3 form-check">
             <input type="checkbox" class="form-check-input" id="id_disponible" name="disponible" {% if form.disponible.value %}checked{% endif %}>

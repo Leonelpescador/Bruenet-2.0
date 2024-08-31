@@ -24,9 +24,9 @@
         <div class="mb-3">
             <label for="id_categoria" class="form-label">Categoría</label>
             <select class="form-control" id="id_categoria" name="categoria" required>
-                <option value="plato">Plato</option>
-                <option value="bebida">Bebida</option>
-                <!-- Agrega más opciones si tienes más categorías -->
+                {% for categoria in categorias %}
+                    <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
+                {% endfor %}
             </select>
         </div>
         <div class="mb-3 form-check">

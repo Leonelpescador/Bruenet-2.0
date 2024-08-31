@@ -60,7 +60,7 @@ class Menu(models.Model):
     precio = models.DecimalField(max_digits=9, decimal_places=2)
     disponible = models.BooleanField(default=True)
     imagen = models.ImageField(upload_to='menu_images/', blank=True, null=True)
-    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, related_name='menus')  # Nueva relación de categoría
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE, related_name='menus')  
 
     def __str__(self):
         return self.nombre_plato

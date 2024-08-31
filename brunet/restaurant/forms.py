@@ -1,5 +1,5 @@
 from django import forms
-from .models import Caja, Pedido, Pago, Reserva, Compra, Mesa, Proveedor, Inventario
+from .models import Caja, Pedido, Pago, Reserva, Compra, Mesa, Proveedor, Inventario, Categoria
 
 # Formulario para Apertura de Caja
 class AperturaCajaForm(forms.ModelForm):
@@ -107,19 +107,59 @@ class InventarioForm(forms.ModelForm):
     class Meta:
         model = Inventario
         fields = ['nombre_producto', 'cantidad_actual', 'cantidad_minima', 'unidad_medida']
+        
+        
+        
+        
 
 # Fromulario de menu
+from django import forms
 from .models import Menu
+
 class MenuForm(forms.ModelForm):
     class Meta:
         model = Menu
-        fields = ['nombre_plato', 'descripcion', 'precio', 'disponible', 'imagen', 'categoria']  
+        fields = ['nombre_plato', 'descripcion', 'precio', 'disponible', 'imagen', 'categoria']
+        labels = {
+            'nombre_plato': 'Nombre del Plato',
+            'descripcion': 'Descripción',
+            'precio': 'Precio',
+            'disponible': 'Disponible',
+            'imagen': 'Imagen del Plato',
+            'categoria': 'Categoría',
+        }
+        widgets = {
+            'nombre_plato': forms.TextInput(attrs={'class': 'form-control'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control'}),
+            'precio': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'disponible': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'imagen': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'categoria': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+class CategoriaForm(forms.ModelForm):
+    class Meta:
+        model = Categoria
+        fields = ['nombre']
+        labels = {
+            'nombre': 'Nombre de la Categoría',
+        }
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+        } 
+#fin menu.       
+        
+        
+        
+        
+        
+        
+        
         
         
 #flujo de pedido por si tiene algun problema ver aca chicos.!
 
 from .models import Pedido, DetallePedido
-
 class PedidoForm(forms.ModelForm):
     class Meta:
         model = Pedido
