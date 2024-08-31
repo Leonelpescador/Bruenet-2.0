@@ -185,6 +185,10 @@ class DetalleCompra(models.Model):
         self.subtotal = self.cantidad * self.precio_unitario
         super().save(*args, **kwargs)
 
+from django.db import models
+from django.utils import timezone
+from restaurant.models import Pago
+
 class Caja(models.Model):
     usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     apertura = models.DateTimeField(auto_now_add=True)
@@ -193,7 +197,13 @@ class Caja(models.Model):
     total_final = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
     estado = models.CharField(max_length=10, default='abierta')
 
-    def cerrar_caja(self, total_final):
+    def calcular_total_final(self):
+        # Suma de todas las transacciones de tipo 'ingreso' asociadas a esta caja
+        total_ingresos = TransaccionCaja.objects.filter(caja=self, tipo='ingreso').aggregate(total=models.Sum('monto'))['total'] or 0
+        return total_ingresos + self.total_inicial
+
+    def cerrar_caja(self):
+        total_final = self.calcular_total_final()
         self.cierre = timezone.now()
         self.total_final = total_final
         self.estado = 'cerrada'
@@ -203,13 +213,14 @@ class Caja(models.Model):
         return f'Caja {self.id} - {self.usuario.username}'
 
 class TransaccionCaja(models.Model):
-    caja = models.ForeignKey(Caja, on_delete=models.CASCADE)
+    caja = models.ForeignKey(Caja, on_delete=models.CASCADE, related_name='transacciones')
     tipo = models.CharField(max_length=10, choices=[('ingreso', 'Ingreso'), ('egreso', 'Egreso')])
     monto = models.DecimalField(max_digits=8, decimal_places=2)
     descripcion = models.TextField(blank=True, null=True)
     fecha = models.DateTimeField(auto_now_add=True)
+    pago = models.ForeignKey(Pago, on_delete=models.SET_NULL, null=True, blank=True, related_name='transacciones', help_text="Pago asociado a esta transacción, si corresponde.")
 
     def __str__(self):
-        return f'Transacción {self.tipo} - {self.monto}'
+        return f'Transacción {self.tipo} - {self.monto} en Caja {self.caja.id}'
 
 

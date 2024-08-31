@@ -439,27 +439,19 @@ def consulta_caja(request, caja_id):
 
 # Cierre de Caja
 @login_required
-def cierre_caja(request):
-    caja = Caja.objects.filter(estado='abierta').order_by('-apertura').first()
-
-    if not caja:
-        messages.error(request, 'No hay caja abierta para cerrar.')
-        return redirect('home')
+def cierre_caja(request, caja_id):
+    caja = get_object_or_404(Caja, id=caja_id)
 
     if request.method == 'POST':
-        form = CierreCajaForm(request.POST, instance=caja)
-        if form.is_valid():
-            caja = form.save(commit=False)
-            caja.estado = 'cerrada'
-            caja.save()
-            messages.success(request, 'Cierre de caja registrado exitosamente.')
-            return redirect('consulta_caja', caja_id=caja.id)
-    else:
-        form = CierreCajaForm(instance=caja)
-    return render(request, 'caja/cierre_caja.html', {'form': form, 'caja': caja})
+        caja.cerrar_caja()
+        messages.success(request, f'Caja {caja.id} cerrada exitosamente con un total de {caja.total_final}.')
+        return redirect('some_view')  # Redirige a donde sea necesario después de cerrar la caja
+
+    total_final = caja.calcular_total_final()
+    return render(request, 'caja/cierre_caja.html', {'caja': caja, 'total_final': total_final})
 
 # Registrar Pago
-@login_required
+
 @login_required
 def registrar_pago(request, pedido_id):
     caja_abierta = Caja.objects.filter(estado='abierta').first()
