@@ -4,161 +4,52 @@
 <div class="container mt-5">
     <h1 class="text-center">Modificar Pedido #{{ pedido.id }} para la Mesa {{ pedido.mesa.numero_mesa }}</h1>
 
-    <div class="form-container" style="max-width: 800px; margin: 0 auto;">
-        <form method="post">
-            {% csrf_token %}
-            <div class="form-group mb-3">
-                {{ pedido_form.as_p }}
-            </div>
+    <form method="post" class="form-container" style="max-width: 800px; margin: 0 auto;">
+        {% csrf_token %}
+        <div class="form-group mb-3">
+            <label for="estado">Estado del Pedido:</label>
+            <select id="estado" name="estado" class="form-control">
+                <option value="pendiente" {% if pedido.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                <option value="preparando" {% if pedido.estado == 'preparando' %}selected{% endif %}>Preparando</option>
+                <option value="servido" {% if pedido.estado == 'servido' %}selected{% endif %}>Servido</option>
+                <option value="pagado" {% if pedido.estado == 'pagado' %}selected{% endif %}>Pagado</option>
+            </select>
+        </div>
 
-            <h3 class="text-center mt-4">Modificar Platos:</h3>
-            {{ formset.management_form }}
+        <h3 class="text-center mt-4">Modificar Platos:</h3>
+        {{ formset.management_form }}
 
-            <div class="form-group mb-3">
-                <label for="categoria">Filtrar por Categoría:</label>
-                <select id="categoria" class="form-control">
-                    <option value="">Selecciona una Categoría</option>
-                    {% for categoria in categorias %}
-                        <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div id="formset-container">
-                {% for form in formset %}
-                <div class="detalle-pedido mb-3 p-3 bg-white rounded shadow-sm">
-                    <div class="form-group mb-2">
-                        {{ form.menu.label_tag }} 
-                        {{ form.menu }}
-                    </div>
-                    <div class="form-group mb-2">
-                        {{ form.cantidad.label_tag }} 
-                        {{ form.cantidad }}
-                    </div>
-                    <div class="form-group mb-2">
-                        {{ form.precio_unitario.label_tag }} 
-                        {{ form.precio_unitario }}
-                    </div>
-                    <div class="form-group mb-2">
-                        <label>Subtotal:</label>
-                        <input type="text" class="form-control subtotal" readonly>
-                    </div>
-                    <button type="button" class="btn btn-danger remove-form-btn">Eliminar</button>
+        <div id="formset-container">
+            {% for form in formset %}
+            <div class="detalle-pedido mb-3 p-3 bg-white rounded shadow-sm">
+                <div class="form-group mb-2">
+                    <label for="categoria-{{ forloop.counter0 }}">Filtrar por Categoría:</label>
+                    <select id="categoria-{{ forloop.counter0 }}" class="form-control">
+                        <option value="">Selecciona una Categoría</option>
+                        {% for categoria in categorias %}
+                            <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
-                {% endfor %}
+                <div class="form-group mb-2">
+                    {{ form.menu.label_tag }} 
+                    {{ form.menu }}
+                </div>
+                <div class="form-group mb-2">
+                    {{ form.cantidad.label_tag }} 
+                    {{ form.cantidad }}
+                </div>
+                <div class="form-group mb-2">
+                    {{ form.precio_unitario.label_tag }} 
+                    {{ form.precio_unitario }}
+                </div>
             </div>
+            {% endfor %}
+        </div>
 
-            <button type="button" id="add-form-btn" class="btn btn-success mb-4">Agregar Otro Plato</button>
-            <div class="text-center">
-                <h4>Total: $<span id="total">0.00</span></h4>
-                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-            </div>
-        </form>
-    </div>
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </div>
+    </form>
 </div>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script type="text/javascript">
-    $(document).ready(function() {
-        var formsetContainer = $('#formset-container');
-        var totalForms = $('#id_form-TOTAL_FORMS');
-
-        // Filtrar platos por categoría
-        $('#categoria').change(function() {
-            var categoriaId = $(this).val();
-            formsetContainer.find('select[id$="-menu"]').each(function() {
-                var $menuSelect = $(this);
-                $.ajax({
-                    url: "{% url 'filtrar_platos_por_categoria' %}",
-                    data: {
-                        'categoria_id': categoriaId
-                    },
-                    success: function(data) {
-                        $menuSelect.html(data);
-                    }
-                });
-            });
-        });
-
-        $('#add-form-btn').click(function() {
-            var formCount = parseInt(totalForms.val());
-            var newForm = formsetContainer.children().last().clone(false);
-            var regex = new RegExp('form-' + (formCount - 1), 'g');
-
-            newForm.html(newForm.html().replace(regex, 'form-' + formCount));
-            newForm.find('input, select').val('');
-
-            formsetContainer.append(newForm);
-            totalForms.val(formCount + 1);
-        });
-
-        formsetContainer.on('click', '.remove-form-btn', function() {
-            if (formsetContainer.children().length > 1) {
-                $(this).closest('.detalle-pedido').remove();
-                totalForms.val(parseInt(totalForms.val()) - 1);
-                calcularTotal();
-            } else {
-                alert("No puedes eliminar este formulario hasta que agregues otro plato.");
-            }
-        });
-
-        function setPrecioUnitario($menuSelect) {
-            var platoId = $menuSelect.val();
-            var precioField = $menuSelect.closest('.detalle-pedido').find('input[id$="-precio_unitario"]');
-            var cantidadField = $menuSelect.closest('.detalle-pedido').find('input[id$="-cantidad"]');
-            var subtotalField = $menuSelect.closest('.detalle-pedido').find('.subtotal');
-
-            if (platoId) {
-                $.ajax({
-                    url: "{% url 'obtener_precio_plato' %}",
-                    data: {
-                        'menu_id': platoId
-                    },
-                    success: function(data) {
-                        if (data.precio) {
-                            precioField.val(data.precio);
-                            actualizarSubtotal(precioField, cantidadField, subtotalField);
-                        }
-                    }
-                });
-            } else {
-                precioField.val('');
-                subtotalField.val('');
-            }
-        }
-
-        function actualizarSubtotal(precioField, cantidadField, subtotalField) {
-            var precio = parseFloat(precioField.val()) || 0;
-            var cantidad = parseInt(cantidadField.val()) || 0;
-            var subtotal = precio * cantidad;
-            subtotalField.val(subtotal.toFixed(2));
-            calcularTotal();
-        }
-
-        function calcularTotal() {
-            var total = 0;
-            formsetContainer.find('.subtotal').each(function() {
-                total += parseFloat($(this).val()) || 0;
-            });
-            $('#total').text(total.toFixed(2));
-        }
-
-        formsetContainer.on('change', 'input[id$="-cantidad"], select[id$="-menu"]', function() {
-            var $detallePedido = $(this).closest('.detalle-pedido');
-            var precioField = $detallePedido.find('input[id$="-precio_unitario"]');
-            var cantidadField = $detallePedido.find('input[id$="-cantidad"]');
-            var subtotalField = $detallePedido.find('.subtotal');
-
-            actualizarSubtotal(precioField, cantidadField, subtotalField);
-        });
-
-        // Inicializar precios unitarios y subtotales al cargar la página
-        formsetContainer.find('select[id$="-menu"]').each(function() {
-            setPrecioUnitario($(this));
-        });
-    });
-</script>
-
 {% endblock %}
-
-

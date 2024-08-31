@@ -42,6 +42,7 @@
                     </td>
                     <td>${{ pedido.total }}</td>
                     <td>
+                        
                         <a href="{% url 'eliminar_pedido' pedido.id %}" class="btn btn-danger mb-1">Eliminar</a>
                         {% if pedido.estado == 'pendiente' %}
                             <a href="{% url 'registrar_pago' pedido.id %}" class="btn btn-success">Registrar Pago</a>

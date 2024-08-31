@@ -43,7 +43,7 @@
 
                 <a href="{% url 'crear_reserva' %}" class="btn btn-custom" aria-label="Crear reserva para la mesa {{ mesa.numero_mesa }}">Crear Reserva</a>
 
-                <a href="{% url 'editar_mesa' mesa.id %}" class="btn btn-custom" aria-label="Cambiar estado de mesa {{ mesa.numero_mesa }}">Cambiar estado</a>
+                <a href="{% url 'editar_mesa' mesa.id %}" class="btn btn-custom" aria-label="Cambiar estado de mesa {{ mesa.numero_mesa }}">Editar Mesa</a>
 
                 {% if mesa.estado == 'ocupada' and mesa.pedido_actual %}
                     <a href="{% url 'registrar_pago' mesa.pedido_actual.id %}" class="btn btn-custom btn-success" aria-label="Registrar pago para el pedido actual">Registrar Pago</a>

@@ -577,7 +577,7 @@ def descargar_reporte_caja(request, caja_id):
     
     # Crear el PDF
     pisa_status = pisa.CreatePDF(
-        io.StringIO(html_string),
+        io.BytesIO(html_string.encode('utf-8')),
         dest=pdf
     )
     
