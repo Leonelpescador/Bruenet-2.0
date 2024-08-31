@@ -15,21 +15,21 @@
     {% endif %}">
         Mesa N° {{ mesa.numero_mesa }}<br>{{ mesa.estado }}<br>Capacidad: {{ mesa.capacidad }}
         <div class="menu-desplegable">
-            <a href="{% url 'editar_mesa' mesa.id %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Cambiar estado</a>
+            <a href="{% url 'editar_mesa' mesa.id %}" class="btn btn-custom" aria-label="Cambiar estado de mesa {{ mesa.numero_mesa }}">Cambiar estado</a>
             
             {% if caja_abierta %}
-                <a href="{% url 'crear_reserva' %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Crear Reserva</a>
+                <a href="{% url 'crear_reserva' %}" class="btn btn-custom" aria-label="Crear reserva para la mesa {{ mesa.numero_mesa }}">Crear Reserva</a>
 
-                <a href="{% url 'crear_pedido' mesa_id=mesa.id %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Crear Pedido</a>
+                <a href="{% url 'crear_pedido' mesa_id=mesa.id %}" class="btn btn-custom" aria-label="Crear pedido para la mesa {{ mesa.numero_mesa }}">Crear Pedido</a>
                 
                 {% if mesa.estado == 'ocupada' and mesa.pedido_actual %}
-                    <a href="{% url 'registrar_pago' mesa.pedido_actual.id %}" class="btn" style="background-color: #2ecc71; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Registrar Pago</a>
+                    <a href="{% url 'registrar_pago' mesa.pedido_actual.id %}" class="btn btn-custom btn-success" aria-label="Registrar pago para el pedido actual">Registrar Pago</a>
                 {% endif %}
             {% else %}
-                <a href="#" class="btn" style="background-color: #ccc; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: not-allowed; font-size: 16px; text-align: center; text-decoration: none; display: inline-block;">Caja Cerrada</a>
+                <a href="#" class="btn btn-custom btn-disabled" aria-disabled="true">Caja Cerrada</a>
             {% endif %}
             
-            <a href="{% url 'pedidos_activos' %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Ver Pedidos</a>
+            <a href="{% url 'pedidos_activos' %}" class="btn btn-custom" aria-label="Ver pedidos activos">Ver Pedidos</a>
         </div>
     </div>
     {% endfor %}
@@ -49,9 +49,7 @@
         {% if caja_abierta.transacciones.exists %}
             <a href="{% url 'consulta_caja' caja_abierta.id %}" class="btn btn-primary">Consultar Caja</a>
         {% else %}
-            <div class="alert alert-info">
-                Aún no hay movimientos registrados en esta caja.
-            </div>
+            <button type="button" class="btn btn-primary" onclick="alert('No hay movimientos registrados en esta caja.');">Consultar Caja</button>
         {% endif %}
         
         <a href="{% url 'cierre_caja' %}" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que deseas cerrar la caja?');">Cerrar Caja</a>
@@ -77,13 +75,10 @@
             });
         });
 
-        document.addEventListener('click', function () {
-            closeAllMenus();
-        });
+        document.addEventListener('click', closeAllMenus);
 
         function closeAllMenus() {
-            const menus = document.querySelectorAll('.menu-desplegable');
-            menus.forEach(menu => {
+            document.querySelectorAll('.menu-desplegable').forEach(menu => {
                 menu.style.display = 'none';
             });
         }

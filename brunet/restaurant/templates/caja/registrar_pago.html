@@ -23,12 +23,6 @@
         margin-bottom: 20px;
     }
 
-    h3 {
-        font-size: 20px;
-        color: #555;
-        margin-top: 20px;
-    }
-
     .form-group {
         margin-bottom: 15px;
     }
@@ -45,11 +39,10 @@
         border: 1px solid #ccc;
     }
 
-    .detalle-pedido {
-        background-color: #f1f1f1;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 15px;
+    #efectivo_section,
+    #transferencia_section {
+        display: none;
+        margin-top: 10px;
     }
 
     .btn {
@@ -58,56 +51,19 @@
         border-radius: 5px;
         border: none;
         cursor: pointer;
-    }
-
-    .btn-success {
-        background-color: #27ae60;
-        color: #fff;
         transition: background-color 0.3s ease;
-    }
-
-    .btn-success:hover {
-        background-color: #219150;
-    }
-
-    .btn-danger {
-        background-color: #e74c3c;
-        color: #fff;
-        transition: background-color 0.3s ease;
-    }
-
-    .btn-danger:hover {
-        background-color: #c0392b;
     }
 
     .btn-primary {
         background-color: #3498db;
         color: #fff;
-        transition: background-color 0.3s ease;
     }
 
     .btn-primary:hover {
         background-color: #2980b9;
     }
-
-    #add-form-btn {
-        display: block;
-        width: 100%;
-        margin-top: 10px;
-    }
-
-    .alert {
-        margin-top: 20px;
-        font-size: 16px;
-        padding: 15px;
-        border-radius: 5px;
-    }
-
-    .alert-info {
-        background-color: #d9edf7;
-        color: #31708f;
-    }
 </style>
+
 <h1>Registrar Pago para el Pedido {{ pedido.id }}</h1>
 
 <div class="form-container" style="max-width: 600px; margin: 0 auto;">
@@ -122,18 +78,18 @@
             </select>
         </div>
 
-        <div id="efectivo_section" style="display: none; margin-top: 10px;">
+        <div id="efectivo_section">
             <div class="form-group">
                 <label for="monto_pagado">Monto Pagado</label>
                 <input type="number" id="monto_pagado" name="monto_pagado" class="form-control" min="0">
             </div>
-            <div class="form-group" id="cambio_section" style="display: none; margin-top: 10px;">
+            <div class="form-group" id="cambio_section">
                 <label for="cambio">Cambio</label>
                 <input type="text" id="cambio" name="cambio" class="form-control" readonly>
             </div>
         </div>
 
-        <div id="transferencia_section" style="display: none; margin-top: 10px;">
+        <div id="transferencia_section">
             <div class="form-group">
                 <label for="comprobante">Adjuntar Comprobante</label>
                 <input type="file" id="comprobante" name="comprobante" class="form-control">
@@ -152,30 +108,41 @@
 document.addEventListener('DOMContentLoaded', function () {
     const metodoPago = document.getElementById('metodo_pago');
     const montoPagado = document.getElementById('monto_pagado');
-    const cambio = document.getElementById('cambio'); 
-    const montoTotal = document.getElementById('monto_total').value;
+    const cambio = document.getElementById('cambio');
+    const montoTotal = parseFloat(document.getElementById('monto_total').value);
 
-    metodoPago.addEventListener('change', function () {
-        if (metodoPago.value === 'efectivo') {
-            document.getElementById('efectivo_section').style.display = 'block';
-            document.getElementById('cambio_section').style.display = 'block';
-        } else {
-            document.getElementById('efectivo_section').style.display = 'none';
-            document.getElementById('cambio_section').style.display = 'none';
-        }
+    const efectivoSection = document.getElementById('efectivo_section');
+    const cambioSection = document.getElementById('cambio_section');
+    const transferenciaSection = document.getElementById('transferencia_section');
 
-        if (metodoPago.value === 'transferencia') {
-            document.getElementById('transferencia_section').style.display = 'block';
+    function toggleSections() {
+        const metodo = metodoPago.value;
+
+        // Mostrar/ocultar secciones según el método de pago seleccionado
+        if (metodo === 'efectivo') {
+            efectivoSection.style.display = 'block';
+            cambioSection.style.display = 'block';
+            transferenciaSection.style.display = 'none';
+        } else if (metodo === 'transferencia') {
+            efectivoSection.style.display = 'none';
+            cambioSection.style.display = 'none';
+            transferenciaSection.style.display = 'block';
         } else {
-            document.getElementById('transferencia_section').style.display = 'none';
+            efectivoSection.style.display = 'none';
+            cambioSection.style.display = 'none';
+            transferenciaSection.style.display = 'none';
         }
-    });
+    }
+
+    metodoPago.addEventListener('change', toggleSections);
 
     montoPagado.addEventListener('input', function () {
         const pagado = parseFloat(montoPagado.value) || 0;
-        const total = parseFloat(montoTotal) || 0;
-        cambio.value = (pagado - total).toFixed(2);
+        cambio.value = (pagado - montoTotal).toFixed(2);
     });
+
+    // Llamar a toggleSections inicialmente para configurar la vista correcta según el valor por defecto del método de pago, si sacan esto no hace el scipt
+    toggleSections();
 });
 </script>
 {% endblock %}
