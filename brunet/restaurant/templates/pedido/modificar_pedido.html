@@ -1,19 +1,132 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Modificar Pedido #{{ pedido.id }} para la Mesa {{ pedido.mesa.numero_mesa }}</h1>
-<div class="form-container">
-    <form method="post">
-        {% csrf_token %}
-        {{ pedido_form.as_p }}
-        <h3>Modificar Platos:</h3>
-        {{ formset.management_form }}
-        {% for form in formset %}
-            <div class="detalle-pedido">
-                {{ form.as_p }}
+<div class="container mt-5">
+    <h1 class="text-center">Modificar Pedido #{{ pedido.id }} para la Mesa {{ pedido.mesa.numero_mesa }}</h1>
+
+    <div class="form-container" style="max-width: 800px; margin: 0 auto;">
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group mb-3">
+                {{ pedido_form.as_p }}
             </div>
-        {% endfor %}
-        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-    </form>
+
+            <h3 class="text-center mt-4">Modificar Platos:</h3>
+            {{ formset.management_form }}
+
+            <div class="form-group mb-3">
+                <label for="categoria">Filtrar por Categoría:</label>
+                <select id="categoria" class="form-control">
+                    <option value="">Selecciona una Categoría</option>
+                    {% for categoria in categorias %}
+                        <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div id="formset-container">
+                {% for form in formset %}
+                <div class="detalle-pedido mb-3 p-3 bg-white rounded shadow-sm">
+                    <div class="form-group mb-2">
+                        {{ form.menu.label_tag }} 
+                        {{ form.menu }}
+                    </div>
+                    <div class="form-group mb-2">
+                        {{ form.cantidad.label_tag }} 
+                        {{ form.cantidad }}
+                    </div>
+                    <div class="form-group mb-2">
+                        {{ form.precio_unitario.label_tag }} 
+                        {{ form.precio_unitario }}
+                    </div>
+                    <button type="button" class="btn btn-danger remove-form-btn">Eliminar</button>
+                </div>
+                {% endfor %}
+            </div>
+
+            <button type="button" id="add-form-btn" class="btn btn-success mb-4">Agregar Otro Plato</button>
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+        var formsetContainer = $('#formset-container');
+        var totalForms = $('#id_form-TOTAL_FORMS');
+
+        // Filtrar platos por categoría
+        $('#categoria').change(function() {
+            var categoriaId = $(this).val();
+            formsetContainer.find('select[id$="-menu"]').each(function() {
+                var $menuSelect = $(this);
+                $.ajax({
+                    url: "{% url 'filtrar_platos_por_categoria' %}",
+                    data: {
+                        'categoria_id': categoriaId
+                    },
+                    success: function(data) {
+                        $menuSelect.html(data);
+                    }
+                });
+            });
+        });
+
+        $('#add-form-btn').click(function() {
+            var formCount = parseInt(totalForms.val());
+            var newForm = formsetContainer.children().last().clone(false);
+            var regex = new RegExp('form-' + (formCount - 1), 'g');
+
+            newForm.html(newForm.html().replace(regex, 'form-' + formCount));
+            newForm.find('input, select').val('');
+
+            formsetContainer.append(newForm);
+            totalForms.val(formCount + 1);
+        });
+
+        formsetContainer.on('click', '.remove-form-btn', function() {
+            if (formsetContainer.children().length > 1) {
+                $(this).closest('.detalle-pedido').remove();
+                totalForms.val(parseInt(totalForms.val()) - 1);
+            } else {
+                alert("No puedes eliminar este formulario hasta que agregues otro plato.");
+            }
+        });
+
+        function setPrecioUnitario($menuSelect) {
+            var platoId = $menuSelect.val();
+            var precioField = $menuSelect.closest('.detalle-pedido').find('input[id$="-precio_unitario"]');
+
+            if (platoId) {
+                $.ajax({
+                    url: "{% url 'obtener_precio_plato' %}",
+                    data: {
+                        'menu_id': platoId
+                    },
+                    success: function(data) {
+                        if (data.precio) {
+                            precioField.val(data.precio);
+                        }
+                    }
+                });
+            } else {
+                precioField.val('');
+            }
+        }
+
+        formsetContainer.on('change', 'select[id$="-menu"]', function() {
+            setPrecioUnitario($(this));
+        });
+
+        // Inicializar precios unitarios al cargar la página
+        formsetContainer.find('select[id$="-menu"]').each(function() {
+            setPrecioUnitario($(this));
+        });
+    });
+</script>
+
 {% endblock %}
+

@@ -56,7 +56,6 @@ from django.contrib.auth.decorators import login_required
 
 
 @login_required
-@login_required
 def crear_pedido(request, mesa_id):
     mesa = get_object_or_404(Mesa, id=mesa_id)
     PedidoFormSet = inlineformset_factory(Pedido, DetallePedido, form=DetallePedidoForm, extra=1)
@@ -69,15 +68,18 @@ def crear_pedido(request, mesa_id):
             pedido = pedido_form.save(commit=False)
             pedido.usuario = request.user
             pedido.mesa = mesa
+            pedido.total = 0  # Inicializamos el total en 0 para evitar el error de valor nulo
+
+            # Guardamos el pedido para generar el ID y poder asociarlo con los detalles
             pedido.save()
 
             # Guardar cada detalle del pedido
-            for form in formset:
-                detalle_pedido = form.save(commit=False)
-                detalle_pedido.pedido = pedido
-                detalle_pedido.save()
+            detalles = formset.save(commit=False)
+            for detalle in detalles:
+                detalle.pedido = pedido
+                detalle.save()
 
-            # Calcular el total del pedido
+            # Recalcular el total del pedido basado en los detalles guardados
             pedido.total = sum(detalle.subtotal for detalle in pedido.detalles.all())
             pedido.save()
 
@@ -87,46 +89,44 @@ def crear_pedido(request, mesa_id):
         pedido_form = PedidoForm()
         formset = PedidoFormSet()
 
-    categorias = Categoria.objects.all()
-
     return render(request, 'pedido/crear_pedido.html', {
         'pedido_form': pedido_form,
         'formset': formset,
         'mesa': mesa,
-        'categorias': categorias,
     })
 
 @login_required
 def modificar_pedido(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
     PedidoFormSet = inlineformset_factory(Pedido, DetallePedido, form=DetallePedidoForm, extra=0)
-
+    
     if request.method == 'POST':
         pedido_form = ModificarPedidoForm(request.POST, instance=pedido)
         formset = PedidoFormSet(request.POST, instance=pedido)
-
+        
         if pedido_form.is_valid() and formset.is_valid():
+            # Guardar el formulario de pedido
             pedido_form.save()
-            formset.save()
 
+            # Guardar los detalles del pedido
+            detalles = formset.save(commit=False)
+            for detalle in detalles:
+                detalle.pedido = pedido
+                detalle.save()
+            
             # Recalcular el total del pedido
-            pedido.total = sum(detalle.subtotal for detalle in pedido.detalles.all())
+            pedido.total = sum(item.subtotal for item in pedido.detalles.all())
             pedido.save()
-
+            
             messages.success(request, 'Pedido modificado con éxito.')
             return redirect('pedidos_activos')
+        else:
+            messages.error(request, 'Por favor corrige los errores.')
     else:
         pedido_form = ModificarPedidoForm(instance=pedido)
         formset = PedidoFormSet(instance=pedido)
-
-    categorias = Categoria.objects.all()
-
-    return render(request, 'pedido/modificar_pedido.html', {
-        'pedido_form': pedido_form,
-        'formset': formset,
-        'pedido': pedido,
-        'categorias': categorias,
-    })
+    
+    return render(request, 'pedido/modificar_pedido.html', {'pedido_form': pedido_form, 'formset': formset, 'pedido': pedido})
 
 
 @login_required

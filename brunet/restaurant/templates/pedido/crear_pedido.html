@@ -14,19 +14,18 @@
             <h3 class="text-center mt-4">Seleccionar Platos:</h3>
             {{ formset.management_form }}
 
-            <div class="form-group mb-3">
-                <label for="categoria">Filtrar por Categoría:</label>
-                <select id="categoria" class="form-control">
-                    <option value="">Selecciona una Categoría</option>
-                    {% for categoria in categorias %}
-                        <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
             <div id="formset-container">
                 {% for form in formset %}
                 <div class="detalle-pedido mb-3 p-3 bg-white rounded shadow-sm">
+                    <div class="form-group mb-3">
+                        <label for="categoria-{{ forloop.counter0 }}">Filtrar por Categoría:</label>
+                        <select id="categoria-{{ forloop.counter0 }}" class="form-control categoria-select">
+                            <option value="">Selecciona una Categoría</option>
+                            {% for categoria in categorias %}
+                                <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <div class="form-group mb-2">
                         {{ form.menu.label_tag }} 
                         {{ form.menu }}
@@ -58,11 +57,11 @@
         var formsetContainer = $('#formset-container');
         var totalForms = $('#id_form-TOTAL_FORMS');
 
-        // Filtrar platos por categoría
-        $('#categoria').change(function() {
-            var categoriaId = $(this).val();
-            formsetContainer.find('select[id$="-menu"]').each(function() {
-                var $menuSelect = $(this);
+        function initializeCategoryFilter() {
+            $('.categoria-select').off('change').on('change', function() {
+                var categoriaId = $(this).val();
+                var $menuSelect = $(this).closest('.detalle-pedido').find('select[id$="-menu"]');
+                
                 $.ajax({
                     url: "{% url 'filtrar_platos_por_categoria' %}",
                     data: {
@@ -73,7 +72,33 @@
                     }
                 });
             });
-        });
+        }
+
+        function initializeMenuChange() {
+            formsetContainer.on('change', 'select[id$="-menu"]', function() {
+                var platoId = $(this).val();
+                var precioField = $(this).closest('.detalle-pedido').find('input[id$="-precio_unitario"]');
+
+                if (platoId) {
+                    $.ajax({
+                        url: "{% url 'obtener_precio_plato' %}",
+                        data: {
+                            'menu_id': platoId
+                        },
+                        success: function(data) {
+                            if (data.precio) {
+                                precioField.val(data.precio);
+                            }
+                        }
+                    });
+                } else {
+                    precioField.val('');
+                }
+            });
+        }
+
+        initializeCategoryFilter();
+        initializeMenuChange();
 
         $('#add-form-btn').click(function() {
             var formCount = parseInt(totalForms.val());
@@ -82,9 +107,13 @@
 
             newForm.html(newForm.html().replace(regex, 'form-' + formCount));
             newForm.find('input, select').val('');
+            newForm.find('.categoria-select').attr('id', 'categoria-' + formCount);
 
             formsetContainer.append(newForm);
             totalForms.val(formCount + 1);
+
+            initializeCategoryFilter();
+            initializeMenuChange();  // Re-initialize the event listeners for new form elements
         });
 
         formsetContainer.on('click', '.remove-form-btn', function() {
@@ -95,28 +124,6 @@
                 alert("No puedes eliminar este formulario hasta que agregues otro plato.");
             }
         });
-
-        formsetContainer.on('change', 'select[id$="-menu"]', function() {
-            var platoId = $(this).val();
-            var precioField = $(this).closest('.detalle-pedido').find('input[id$="-precio_unitario"]');
-
-            if (platoId) {
-                $.ajax({
-                    url: "{% url 'obtener_precio_plato' %}",
-                    data: {
-                        'menu_id': platoId
-                    },
-                    success: function(data) {
-                        if (data.precio) {
-                            precioField.val(data.precio);
-                        }
-                    }
-                });
-            } else {
-                precioField.val('');
-            }
-        });
     });
 </script>
-
 {% endblock %}
