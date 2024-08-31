@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Caja #{{ caja.id }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('{% static "images/brunet_logo_fondo.jpg" %}');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .content {
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8); /* Fondo semi-transparente */
+        }
+        h1, h2 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="content">
+        <h1>Reporte de Caja #{{ caja.id }}</h1>
+        <p>Usuario: {{ caja.usuario.username }}</p>
+        <p>Apertura: {{ caja.apertura|date:"d/m/Y H:i" }}</p>
+        <p>Cierre: {{ caja.cierre|date:"d/m/Y H:i" }}</p>
+        <p>Total Inicial: ${{ caja.total_inicial }}</p>
+        <p>Total Final: ${{ caja.total_final }}</p>
+
+        <h2>Transacciones</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Descripción</th>
+                    <th>Monto</th>
+                    <th>Tipo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaccion in caja.transacciones.all %}
+                    <tr>
+                        <td>{{ transaccion.fecha|date:"d/m/Y H:i" }}</td>
+                        <td>{{ transaccion.descripcion }}</td>
+                        <td>${{ transaccion.monto }}</td>
+                        <td>{{ transaccion.tipo|title }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+

@@ -3,15 +3,15 @@
 {% block content %}
 <h1>Consulta de Caja</h1>
 <h3>Caja abierta por: {{ caja.usuario.username }}</h3>
-<p>Apertura: {{ caja.apertura }}</p>
+<p>Apertura: {{ caja.apertura|date:"d/m/Y H:i" }}</p>
 {% if caja.cierre %}
-    <p>Cierre: {{ caja.cierre }}</p>
+    <p>Cierre: {{ caja.cierre|date:"d/m/Y H:i" }}</p>
 {% endif %}
 
 <h4>Transacciones:</h4>
 <ul>
     {% for transaccion in transacciones %}
-        <li>{{ transaccion.tipo }} - ${{ transaccion.monto }} - {{ transaccion.descripcion }} ({{ transaccion.fecha }})</li>
+        <li>{{ transaccion.tipo }} - ${{ transaccion.monto }} - {{ transaccion.descripcion }} ({{ transaccion.fecha|date:"d/m/Y H:i" }})</li>
     {% endfor %}
 </ul>
 
@@ -22,4 +22,9 @@
         <li>Pago de Pedido ID {{ pago.pedido.id }} - Monto: ${{ pago.monto }} - Método: {{ pago.metodo_pago }}</li>
     {% endfor %}
 </ul>
+
+<!-- Botón para volver al inicio -->
+<a href="{% url 'home' %}" class="btn btn-primary mt-3">Volver a Inicio</a>
+
 {% endblock %}
+

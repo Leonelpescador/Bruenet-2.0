@@ -89,9 +89,9 @@ urlpatterns =[
     # Caja 
     path('caja/apertura/', views.apertura_caja, name='apertura_caja'),
     path('caja/consulta/<int:caja_id>/', views.consulta_caja, name='consulta_caja'),
-    path('caja/cierre/', views.cierre_caja, name='cierre_caja'),
+    path('caja/cierre/<int:caja_id>/', views.cierre_caja, name='cierre_caja'),
     path('caja/registrar_pago/<int:pedido_id>/', views.registrar_pago, name='registrar_pago'),
-    
+    path('caja/reporte/<int:caja_id>/', views.descargar_reporte_caja, name='descargar_reporte_caja'),
     
     # Menu "Platos"
     path('menu/listar/', views.listar_menu, name='listar_menu'),

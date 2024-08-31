@@ -443,12 +443,22 @@ def cierre_caja(request, caja_id):
     caja = get_object_or_404(Caja, id=caja_id)
 
     if request.method == 'POST':
-        caja.cerrar_caja()
+        total_final = caja.calcular_total_final()
+        caja.cerrar_caja(total_final)
         messages.success(request, f'Caja {caja.id} cerrada exitosamente con un total de {caja.total_final}.')
-        return redirect('some_view')  # Redirige a donde sea necesario después de cerrar la caja
+        return redirect('home')  # Redirige a la vista deseada después de cerrar la caja
 
     total_final = caja.calcular_total_final()
-    return render(request, 'caja/cierre_caja.html', {'caja': caja, 'total_final': total_final})
+    total_ingresos = sum(transaccion.monto for transaccion in caja.transacciones.filter(tipo='ingreso'))
+    
+    return render(request, 'caja/cierre_caja.html', {
+        'caja': caja,
+        'total_final': total_final,
+        'total_ingresos': total_ingresos,
+    })
+
+
+
 
 # Registrar Pago
 
@@ -482,6 +492,54 @@ def registrar_pago(request, pedido_id):
         return redirect('consulta_caja', caja_id=caja_abierta.id)
     
     return render(request, 'caja/registrar_pago.html', {'pedido': pedido, 'caja': caja_abierta})
+
+
+
+#reporte de cierre de caja 
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
+import io
+from django.utils import timezone
+
+def descargar_reporte_caja(request, caja_id):
+    caja = get_object_or_404(Caja, id=caja_id)
+    template_path = 'caja/reporte_caja_pdf.html'
+    context = {'caja': caja}
+    
+    # Verificar si la caja tiene una fecha de cierre
+    if caja.cierre:
+        fecha_cierre = caja.cierre.strftime("%Y-%m-%d_%H-%M-%S")
+    else:
+        # Si la caja no está cerrada, usar la fecha y hora actual
+        fecha_cierre = timezone.now().strftime("%Y-%m-%d_%H-%M-%S")
+    
+    nombre_archivo = f"Cierre_de_caja_{fecha_cierre}.pdf"
+    
+    # Renderizar la plantilla en un string
+    html_string = render_to_string(template_path, context)
+    
+    # Crear un objeto de BytesIO para generar el PDF
+    pdf = io.BytesIO()
+    
+    # Crear el PDF
+    pisa_status = pisa.CreatePDF(
+        io.StringIO(html_string),
+        dest=pdf
+    )
+    
+    # Si no hubo errores, preparar la respuesta con el PDF
+    if not pisa_status.err:
+        pdf.seek(0)
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{nombre_archivo}"'
+        return response
+    
+    # Si hubo un error, mostrar el error en la respuesta
+    return HttpResponse(f"Error al generar el PDF: {pisa_status.err}", content_type='text/plain')
+
+
 
 
 

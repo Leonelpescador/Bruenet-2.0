@@ -4,13 +4,43 @@
 <div class="container mt-5">
     <h1>Cierre de Caja</h1>
     
+    <div class="alert alert-info">
+        <strong>Total Inicial:</strong> ${{ caja.total_inicial }}<br>
+        <strong>Total Ingresos:</strong> ${{ total_ingresos }}<br>
+        <strong>Total Final:</strong> ${{ total_final }}
+    </div>
+    
     <form method="post">
         {% csrf_token %}
-        <div class="mb-3">
-            <label for="total_final" class="form-label">Total Final</label>
-            {{ form.total_final }}
-        </div>
+        <input type="hidden" name="total_final" value="{{ total_final }}">
         <button type="submit" class="btn btn-primary">Cerrar Caja</button>
     </form>
+
+    <hr>
+
+    <h3>Transacciones</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Descripción</th>
+                <th>Monto</th>
+                <th>Tipo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for transaccion in caja.transacciones.all %}
+                <tr>
+                    <td>{{ transaccion.fecha|date:"d/m/Y H:i" }}</td>
+                    <td>{{ transaccion.descripcion }}</td>
+                    <td>${{ transaccion.monto }}</td>
+                    <td>{{ transaccion.tipo|title }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{% url 'descargar_reporte_caja' caja.id %}" class="btn btn-secondary">Descargar Reporte PDF</a>
+
 </div>
 {% endblock %}
