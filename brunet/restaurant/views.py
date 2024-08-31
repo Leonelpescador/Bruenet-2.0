@@ -190,6 +190,9 @@ def eliminar_pago(request, pago_id):
         return redirect('home')
     return render(request, 'pago/eliminar_pago.html', {'pago': pago})
 
+
+
+
 # Vista de Reservas
 @login_required
 def reservas(request):
@@ -199,19 +202,29 @@ def reservas(request):
 # Creación de Reserva
 
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+from .forms import ReservaForm, ModificarReservaForm
+from .models import Reserva
+
+# Creación de Reserva
 @login_required
 def crear_reserva(request):
     if request.method == 'POST':
         form = ReservaForm(request.POST)
         if form.is_valid():
-            form.save()
+            reserva = form.save(commit=False)  # No guardar aún en la base de datos
+            reserva.usuario = request.user  # Asignar el usuario actual
+            reserva.save()  # Ahora guardar en la base de datos
             messages.success(request, 'Reserva creada con éxito.')
             return redirect('reservas')  # Redirige a la lista de reservas o donde sea necesario
     else:
         form = ReservaForm()
     return render(request, 'reserva/crear_reserva.html', {'form': form})
 
-# Modificación de Reserva
+#modifcar reserva
 @login_required
 def modificar_reserva(request, reserva_id):
     reserva = get_object_or_404(Reserva, id=reserva_id)
@@ -220,10 +233,11 @@ def modificar_reserva(request, reserva_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Reserva modificada con éxito.')
-            return redirect('home')
+            return redirect('reservas')
     else:
         form = ModificarReservaForm(instance=reserva)
-    return render(request, 'reserva/modificar_reserva.html', {'form': form})
+    return render(request, 'reserva/editar_reserva.html', {'form': form})
+
 
 # Eliminación de Reserva
 @login_required
@@ -232,8 +246,41 @@ def eliminar_reserva(request, reserva_id):
     if request.method == 'POST':
         reserva.delete()
         messages.success(request, 'Reserva eliminada con éxito.')
-        return redirect('home')
+        return redirect('reservas')  # Redirige a la lista de reservas o donde sea necesario
     return render(request, 'reserva/eliminar_reserva.html', {'reserva': reserva})
+
+
+#from de reservas  
+from django import forms
+from .models import Reserva
+
+class ReservaForm(forms.ModelForm):
+    fecha_reserva = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        label='Fecha y Hora de la Reserva'
+    )
+
+    class Meta:
+        model = Reserva
+        fields = ['mesa', 'fecha_reserva', 'nombre_cliente', 'telefono_cliente', 'estado', 'numero_personas', 'comentarios']
+
+class ModificarReservaForm(forms.ModelForm):
+    fecha_reserva = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        label='Fecha y Hora de la Reserva'
+    )
+
+    class Meta:
+        model = Reserva
+        fields = ['mesa', 'fecha_reserva', 'nombre_cliente', 'telefono_cliente', 'estado', 'numero_personas', 'comentarios']
+
+
+#fin de flujo de reserva.
+
+
+
+
+
 
 # Inventario
 @login_required
