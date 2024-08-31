@@ -1,6 +1,113 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f8f9fa;
+        color: #333;
+    }
+
+    .form-container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-top: 30px;
+    }
+
+    h1 {
+        font-size: 24px;
+        color: #c0392b;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    h3 {
+        font-size: 20px;
+        color: #555;
+        margin-top: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+    }
+
+    .detalle-pedido {
+        background-color: #f1f1f1;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-success {
+        background-color: #27ae60;
+        color: #fff;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-success:hover {
+        background-color: #219150;
+    }
+
+    .btn-danger {
+        background-color: #e74c3c;
+        color: #fff;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-danger:hover {
+        background-color: #c0392b;
+    }
+
+    .btn-primary {
+        background-color: #3498db;
+        color: #fff;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #2980b9;
+    }
+
+    #add-form-btn {
+        display: block;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    .alert {
+        margin-top: 20px;
+        font-size: 16px;
+        padding: 15px;
+        border-radius: 5px;
+    }
+
+    .alert-info {
+        background-color: #d9edf7;
+        color: #31708f;
+    }
+</style>
 <h1>Registrar Pago para el Pedido {{ pedido.id }}</h1>
 
 <div class="form-container" style="max-width: 600px; margin: 0 auto;">
@@ -15,7 +122,6 @@
             </select>
         </div>
 
-        <!-- Si selecciona la opción de efectivo, se va a desplegar un menú para calcular el cambio -->
         <div id="efectivo_section" style="display: none; margin-top: 10px;">
             <div class="form-group">
                 <label for="monto_pagado">Monto Pagado</label>
@@ -27,7 +133,6 @@
             </div>
         </div>
 
-        <!-- Si selecciona transferencia, habilita la opción de subir una foto o PDF -->
         <div id="transferencia_section" style="display: none; margin-top: 10px;">
             <div class="form-group">
                 <label for="comprobante">Adjuntar Comprobante</label>
@@ -40,7 +145,6 @@
         <button type="submit" class="btn btn-primary">Registrar Pago</button>
     </form>
 </div>
-
 {% endblock %}
 
 {% block extra_js %}
