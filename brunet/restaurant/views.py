@@ -460,21 +460,21 @@ def cierre_caja(request):
 
 # Registrar Pago
 @login_required
+@login_required
 def registrar_pago(request, pedido_id):
     caja_abierta = Caja.objects.filter(estado='abierta').first()
     if not caja_abierta:
         return redirect('apertura_caja')
 
     pedido = get_object_or_404(Pedido, id=pedido_id, estado='pendiente')
+    
+    if not pedido:
+        messages.error(request, 'No se encontró un pedido válido para registrar el pago.')
+        return redirect('home')
+
     if request.method == 'POST':
         metodo_pago = request.POST.get('metodo_pago')
-        comprobante = request.FILES.get('comprobante')  # Obtener el archivo adjunto
-        pago = Pago(
-            pedido=pedido,
-            metodo_pago=metodo_pago,
-            monto=pedido.total,
-            comprobante=comprobante  # Asignar el archivo al campo comprobante
-        )
+        pago = Pago(pedido=pedido, metodo_pago=metodo_pago, monto=pedido.total)
         pago.save()
         pedido.estado = 'pagado'
         pedido.save()
@@ -517,10 +517,11 @@ def cliente(request):
 
 
 #Menu "Platos."
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from .forms import MenuForm
 from .models import Menu
+from django.contrib.auth.decorators import login_required
 
 @login_required
 def listar_menu(request):
@@ -534,27 +535,50 @@ def listar_menu(request):
 @login_required
 def crear_menu(request):
     if request.method == 'POST':
-        form = MenuForm(request.POST, request.FILES)  
+        form = MenuForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             messages.success(request, 'El menú ha sido guardado con éxito.')
-            return redirect('listar_menu')  
+            return redirect('listar_menu')
+        else:
+            messages.error(request, 'Error al guardar el menú. Verifica los datos ingresados.')
+            print(form.errors) 
     else:
         form = MenuForm()
     return render(request, 'menu/crear_menu.html', {'form': form})
 
 @login_required
+
+
+
+@login_required
 def editar_menu(request, menu_id):
     menu_item = get_object_or_404(Menu, id=menu_id)
+    
+    # Guardamos la referencia a la imagen actual
+    imagen_anterior = menu_item.imagen
+
     if request.method == 'POST':
         form = MenuForm(request.POST, request.FILES, instance=menu_item)
+        
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Plato actualizado con éxito.')
-            return redirect('listar_menu')  
+            # Verificamos si se ha cargado una nueva imagen
+            if not request.FILES.get('imagen') and imagen_anterior:
+                form.instance.imagen = imagen_anterior
+
+            # Guardar solo si hay cambios en los campos
+            if form.has_changed():
+                form.save()
+                messages.success(request, 'Plato actualizado con éxito.')
+            else:
+                messages.info(request, 'No se detectaron cambios.')
+            
+            return redirect('listar_menu')
     else:
         form = MenuForm(instance=menu_item)
-    return render(request, 'menu/editar_menu.html', {'form': form})
+    
+    return render(request, 'menu/editar_menu.html', {'form': form, 'menu': menu_item})
+
 
 @login_required
 def eliminar_menu(request, menu_id):
@@ -562,7 +586,7 @@ def eliminar_menu(request, menu_id):
     if request.method == 'POST':
         menu_item.delete()
         messages.success(request, 'Plato eliminado con éxito.')
-        return redirect('listar_menu')  
+        return redirect('listar_menu')
     return render(request, 'menu/eliminar_menu.html', {'menu': menu_item})
 
 @login_required
@@ -572,6 +596,7 @@ def cambiar_disponibilidad_menu(request, menu_id):
     menu_item.save()
     messages.success(request, 'La disponibilidad del menú ha sido actualizada.')
     return redirect('listar_menu')
+
 
 
 #pagos.

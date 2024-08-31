@@ -21,6 +21,10 @@
                 <a href="{% url 'crear_reserva' %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Crear Reserva</a>
 
                 <a href="{% url 'crear_pedido' mesa_id=mesa.id %}" class="btn" style="background-color: #3498db; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Crear Pedido</a>
+                
+                {% if mesa.estado == 'ocupada' and mesa.pedido_actual %}
+                    <a href="{% url 'registrar_pago' mesa.pedido_actual.id %}" class="btn" style="background-color: #2ecc71; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-size: 16px; text-align: center; text-decoration: none; display: inline-block; transition: background-color 0.3s ease;">Registrar Pago</a>
+                {% endif %}
             {% else %}
                 <a href="#" class="btn" style="background-color: #ccc; color: #fff; padding: 10px 20px; border-radius: 5px; border: none; cursor: not-allowed; font-size: 16px; text-align: center; text-decoration: none; display: inline-block;">Caja Cerrada</a>
             {% endif %}

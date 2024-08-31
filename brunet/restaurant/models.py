@@ -49,7 +49,7 @@ class Mesa(models.Model):
 class Menu(models.Model):
     nombre_plato = models.CharField(max_length=200)
     descripcion = models.TextField(blank=True, null=True)
-    precio = models.DecimalField(max_digits=6, decimal_places=2)
+    precio = models.DecimalField(max_digits=9, decimal_places=2)
     disponible = models.BooleanField(default=True)
     imagen = models.ImageField(upload_to='menu_images/', blank=True, null=True)  # Campo para la imagen del plato
 
