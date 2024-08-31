@@ -39,6 +39,10 @@
                         {{ form.precio_unitario.label_tag }} 
                         {{ form.precio_unitario }}
                     </div>
+                    <div class="form-group mb-2">
+                        <label>Subtotal:</label>
+                        <input type="text" class="form-control subtotal" readonly>
+                    </div>
                     <button type="button" class="btn btn-danger remove-form-btn">Eliminar</button>
                 </div>
                 {% endfor %}
@@ -46,6 +50,7 @@
 
             <button type="button" id="add-form-btn" class="btn btn-success mb-4">Agregar Otro Plato</button>
             <div class="text-center">
+                <h4>Total: $<span id="total">0.00</span></h4>
                 <button type="submit" class="btn btn-primary">Guardar Cambios</button>
             </div>
         </form>
@@ -91,6 +96,7 @@
             if (formsetContainer.children().length > 1) {
                 $(this).closest('.detalle-pedido').remove();
                 totalForms.val(parseInt(totalForms.val()) - 1);
+                calcularTotal();
             } else {
                 alert("No puedes eliminar este formulario hasta que agregues otro plato.");
             }
@@ -99,6 +105,8 @@
         function setPrecioUnitario($menuSelect) {
             var platoId = $menuSelect.val();
             var precioField = $menuSelect.closest('.detalle-pedido').find('input[id$="-precio_unitario"]');
+            var cantidadField = $menuSelect.closest('.detalle-pedido').find('input[id$="-cantidad"]');
+            var subtotalField = $menuSelect.closest('.detalle-pedido').find('.subtotal');
 
             if (platoId) {
                 $.ajax({
@@ -109,19 +117,42 @@
                     success: function(data) {
                         if (data.precio) {
                             precioField.val(data.precio);
+                            actualizarSubtotal(precioField, cantidadField, subtotalField);
                         }
                     }
                 });
             } else {
                 precioField.val('');
+                subtotalField.val('');
             }
         }
 
-        formsetContainer.on('change', 'select[id$="-menu"]', function() {
-            setPrecioUnitario($(this));
+        function actualizarSubtotal(precioField, cantidadField, subtotalField) {
+            var precio = parseFloat(precioField.val()) || 0;
+            var cantidad = parseInt(cantidadField.val()) || 0;
+            var subtotal = precio * cantidad;
+            subtotalField.val(subtotal.toFixed(2));
+            calcularTotal();
+        }
+
+        function calcularTotal() {
+            var total = 0;
+            formsetContainer.find('.subtotal').each(function() {
+                total += parseFloat($(this).val()) || 0;
+            });
+            $('#total').text(total.toFixed(2));
+        }
+
+        formsetContainer.on('change', 'input[id$="-cantidad"], select[id$="-menu"]', function() {
+            var $detallePedido = $(this).closest('.detalle-pedido');
+            var precioField = $detallePedido.find('input[id$="-precio_unitario"]');
+            var cantidadField = $detallePedido.find('input[id$="-cantidad"]');
+            var subtotalField = $detallePedido.find('.subtotal');
+
+            actualizarSubtotal(precioField, cantidadField, subtotalField);
         });
 
-        // Inicializar precios unitarios al cargar la página
+        // Inicializar precios unitarios y subtotales al cargar la página
         formsetContainer.find('select[id$="-menu"]').each(function() {
             setPrecioUnitario($(this));
         });
@@ -129,4 +160,5 @@
 </script>
 
 {% endblock %}
+
 

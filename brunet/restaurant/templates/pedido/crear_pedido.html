@@ -5,7 +5,7 @@
     <h1 class="text-center">Crear Pedido para la Mesa {{ mesa.numero_mesa }}</h1>
 
     <div class="form-container" style="max-width: 800px; margin: 0 auto;">
-        <form method="post">
+        <form id="pedidoForm" method="post">
             {% csrf_token %}
             <div class="form-group mb-3">
                 {{ pedido_form.as_p }}
@@ -37,13 +37,10 @@
                     <div class="form-group mb-2">
                         {{ form.precio_unitario.label_tag }} 
                         {{ form.precio_unitario }}
-                    </div>
-                    <button type="button" class="btn btn-danger remove-form-btn">Eliminar</button>
-                </div>
+                    
                 {% endfor %}
             </div>
 
-            <button type="button" id="add-form-btn" class="btn btn-success mb-4">Agregar Otro Plato</button>
             <div class="text-center">
                 <button type="submit" class="btn btn-primary">Crear Pedido</button>
             </div>
@@ -75,7 +72,7 @@
         }
 
         function initializeMenuChange() {
-            formsetContainer.on('change', 'select[id$="-menu"]', function() {
+            formsetContainer.find('select[id$="-menu"]').off('change').on('change', function() {
                 var platoId = $(this).val();
                 var precioField = $(this).closest('.detalle-pedido').find('input[id$="-precio_unitario"]');
 
@@ -113,7 +110,7 @@
             totalForms.val(formCount + 1);
 
             initializeCategoryFilter();
-            initializeMenuChange();  // Re-initialize the event listeners for new form elements
+            initializeMenuChange();
         });
 
         formsetContainer.on('click', '.remove-form-btn', function() {
@@ -123,6 +120,25 @@
             } else {
                 alert("No puedes eliminar este formulario hasta que agregues otro plato.");
             }
+        });
+
+        $('#pedidoForm').submit(function(event) {
+            event.preventDefault(); // Prevenir el envío tradicional del formulario
+            
+            $.ajax({
+                url: "{% url 'crear_pedido' mesa.id %}",
+                type: "POST",
+                data: $(this).serialize(),
+                success: function(response) {
+                    if (response.success) {
+                        if (confirm("¿Quieres agregar otro pedido?")) {
+                            location.reload();
+                        } else {
+                            window.location.href = "{% url 'pedidos_activos' %}";
+                        }
+                    }
+                }
+            });
         });
     });
 </script>

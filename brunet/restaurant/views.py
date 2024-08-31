@@ -46,19 +46,14 @@ from .models import Pedido, DetallePedido
 DetallePedidoFormSet = inlineformset_factory(Pedido, DetallePedido, form=DetallePedidoForm, extra=1)
 
 
-from django.forms import inlineformset_factory
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from .models import Pedido, DetallePedido, Mesa
-from .forms import PedidoForm, DetallePedidoForm, ModificarPedidoForm
-from django.contrib.auth.decorators import login_required
-
-
+from django.http import JsonResponse
+from .models import Categoria  # Importa el modelo de Categoría
 
 @login_required
 def crear_pedido(request, mesa_id):
     mesa = get_object_or_404(Mesa, id=mesa_id)
     PedidoFormSet = inlineformset_factory(Pedido, DetallePedido, form=DetallePedidoForm, extra=1)
+    categorias = Categoria.objects.all()  # Obtén todas las categorías
 
     if request.method == 'POST':
         pedido_form = PedidoForm(request.POST)
@@ -68,23 +63,20 @@ def crear_pedido(request, mesa_id):
             pedido = pedido_form.save(commit=False)
             pedido.usuario = request.user
             pedido.mesa = mesa
-            pedido.total = 0  # Inicializamos el total en 0 para evitar el error de valor nulo
+            pedido.total = 0
 
-            # Guardamos el pedido para generar el ID y poder asociarlo con los detalles
             pedido.save()
 
-            # Guardar cada detalle del pedido
             detalles = formset.save(commit=False)
             for detalle in detalles:
                 detalle.pedido = pedido
                 detalle.save()
 
-            # Recalcular el total del pedido basado en los detalles guardados
             pedido.total = sum(detalle.subtotal for detalle in pedido.detalles.all())
             pedido.save()
 
-            messages.success(request, 'Pedido creado con éxito.')
-            return redirect('pedidos_activos')
+            return JsonResponse({'success': True})
+
     else:
         pedido_form = PedidoForm()
         formset = PedidoFormSet()
@@ -93,40 +85,41 @@ def crear_pedido(request, mesa_id):
         'pedido_form': pedido_form,
         'formset': formset,
         'mesa': mesa,
+        'categorias': categorias,  # Pasamos las categorías al contexto
     })
+
 
 @login_required
 def modificar_pedido(request, pedido_id):
     pedido = get_object_or_404(Pedido, id=pedido_id)
     PedidoFormSet = inlineformset_factory(Pedido, DetallePedido, form=DetallePedidoForm, extra=0)
-    
+    categorias = Categoria.objects.all()  # Mover la obtención de categorías fuera del bloque if
+
     if request.method == 'POST':
         pedido_form = ModificarPedidoForm(request.POST, instance=pedido)
         formset = PedidoFormSet(request.POST, instance=pedido)
         
         if pedido_form.is_valid() and formset.is_valid():
-            # Guardar el formulario de pedido
             pedido_form.save()
-
-            # Guardar los detalles del pedido
-            detalles = formset.save(commit=False)
-            for detalle in detalles:
-                detalle.pedido = pedido
-                detalle.save()
+            formset.save()
             
             # Recalcular el total del pedido
             pedido.total = sum(item.subtotal for item in pedido.detalles.all())
             pedido.save()
             
             messages.success(request, 'Pedido modificado con éxito.')
-            return redirect('pedidos_activos')
-        else:
-            messages.error(request, 'Por favor corrige los errores.')
+            return redirect('home')
     else:
         pedido_form = ModificarPedidoForm(instance=pedido)
         formset = PedidoFormSet(instance=pedido)
     
-    return render(request, 'pedido/modificar_pedido.html', {'pedido_form': pedido_form, 'formset': formset, 'pedido': pedido})
+    return render(request, 'pedido/modificar_pedido.html', {
+        'pedido_form': pedido_form,
+        'formset': formset,
+        'pedido': pedido,
+        'categorias': categorias,  # Pasamos las categorías al contexto
+    })
+
 
 
 @login_required
