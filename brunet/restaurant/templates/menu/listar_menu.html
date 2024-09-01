@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% block title %}Listado de Menús{% endblock %}
+
 {% block content %}
 <div class="container my-5">
     <h2 class="text-center my-4">Listado de Menús</h2>
@@ -7,6 +9,40 @@
 
     {% for categoria, items in menu_categorias.items %}
         <h3>{{ categoria }}</h3>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Nombre del Plato</th>
+                        <th>Descripción</th>
+                        <th>Precio</th>
+                        <th>Disponible</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ item.nombre_plato }}</td>
+                        <td>{{ item.descripcion }}</td>
+                        <td>${{ item.precio }}</td>
+                        <td>{{ item.disponible|yesno:"Sí,No" }}</td>
+                        <td>
+                            <a href="{% url 'editar_menu' item.id %}" class="btn btn-sm btn-warning">Editar</a>
+                            <a href="{% url 'eliminar_menu' item.id %}" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar este plato?');">Eliminar</a>
+                            <a href="{% url 'cambiar_disponibilidad_menu' item.id %}" class="btn btn-sm btn-secondary">
+                                {% if item.disponible %}Marcar como No Disponible{% else %}Marcar como Disponible{% endif %}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endfor %}
+
+    <h3>Menús No Disponibles</h3>
+    <div class="table-responsive">
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -18,7 +54,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for item in items %}
+                {% for item in menu_items_no_disponibles %}
                 <tr>
                     <td>{{ item.nombre_plato }}</td>
                     <td>{{ item.descripcion }}</td>
@@ -27,40 +63,12 @@
                     <td>
                         <a href="{% url 'editar_menu' item.id %}" class="btn btn-sm btn-warning">Editar</a>
                         <a href="{% url 'eliminar_menu' item.id %}" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar este plato?');">Eliminar</a>
-                        <a href="{% url 'cambiar_disponibilidad_menu' item.id %}" class="btn btn-sm btn-secondary">Marcar como No Disponible</a>
+                        <a href="{% url 'cambiar_disponibilidad_menu' item.id %}" class="btn btn-sm btn-success">Marcar como Disponible</a>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-    {% endfor %}
-
-    <h3>Menús No Disponibles</h3>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Nombre del Plato</th>
-                <th>Descripción</th>
-                <th>Precio</th>
-                <th>Disponible</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in menu_items_no_disponibles %}
-            <tr>
-                <td>{{ item.nombre_plato }}</td>
-                <td>{{ item.descripcion }}</td>
-                <td>${{ item.precio }}</td>
-                <td>{{ item.disponible|yesno:"Sí,No" }}</td>
-                <td>
-                    <a href="{% url 'editar_menu' item.id %}" class="btn btn-sm btn-warning">Editar</a>
-                    <a href="{% url 'eliminar_menu' item.id %}" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar este plato?');">Eliminar</a>
-                    <a href="{% url 'cambiar_disponibilidad_menu' item.id %}" class="btn btn-sm btn-success">Marcar como Disponible</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    </div>
 </div>
 {% endblock %}
