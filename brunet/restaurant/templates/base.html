@@ -44,14 +44,18 @@
                         <a class="nav-link" href="{% url 'inventario' %}">Inventario</a></li>
                     <li class="nav-item {% if request.resolver_match.url_name == 'compras' %}active{% endif %}">
                         <a class="nav-link" href="{% url 'compras' %}">Compras</a></li>
-                    <li class="nav-item {% if request.resolver_match.url_name == 'proveedores' %}active{% endif %}">
-                        <a class="nav-link" href="{% url 'proveedores' %}">Proveedores</a></li>
                     <li class="nav-item {% if request.resolver_match.url_name == 'cliente' %}active{% endif %}">
                         <a class="nav-link" href="{% url 'cliente' %}">Página del Cliente</a></li>
-                    <li class="nav-item ms-auto">
-                        <a class="nav-link" href="{% url 'logout' %}">Salir</a>
-                    </li>
-                    <!-- Aquí puedes añadir un botón o funcionalidad adicional -->
+                        <li class="nav-item ms-auto">
+                            <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display: none;">
+                                {% csrf_token %}
+                            </form>
+                            <a class="nav-link" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                Salir
+                            </a>
+                        </li>
+                        
+                    <!-- Aquí pueden añadir un botón o funcionalidad adicional -->
                 </ul>
             </div>
         </div>

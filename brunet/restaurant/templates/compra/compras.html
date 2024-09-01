@@ -2,6 +2,7 @@
 
 {% block content %}
 <style>
+
     .compras-container {
         max-width: 800px;
         margin: 50px auto;
@@ -18,11 +19,9 @@
         font-size: 28px;
     }
 
-    .btn-primary {
+    .btn-primary, .btn-secondary {
         display: inline-block;
         padding: 10px 20px;
-        background-color: #007bff;
-        color: #fff;
         text-decoration: none;
         border-radius: 5px;
         font-weight: bold;
@@ -30,8 +29,23 @@
         margin-bottom: 20px;
     }
 
+    .btn-primary {
+        background-color: #007bff;
+        color: #fff;
+    }
+
     .btn-primary:hover {
         background-color: #0056b3;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: #fff;
+        margin-left: 10px; /* Añadido un margen a la izquierda para separar ambos botones */
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
     }
 
     .compras-list {
@@ -71,7 +85,6 @@
         font-weight: bold;
         margin-left: auto;
         text-align: right;
-        
     }
 
     .compra-actions {
@@ -114,26 +127,25 @@
         background-color: #138496;
     }
 
-    
     .modal {
-        display: none; 
-        position: fixed; 
-        z-index: 1000; 
+        display: none;
+        position: fixed;
+        z-index: 1000;
         left: 0;
         top: 0;
-        width: 100%; 
-        height: 100%; 
+        width: 100%;
+        height: 100%;
         overflow: auto;
-        background-color: rgba(0, 0, 0, 0.4); 
+        background-color: rgba(0, 0, 0, 0.4);
     }
 
     .modal-content {
         background-color: #fefefe;
-        margin: 15% auto; 
+        margin: 15% auto;
         padding: 20px;
         border: 1px solid #888;
         width: 80%;
-        max-width: 600px; 
+        max-width: 600px;
     }
 
     .close {
@@ -156,12 +168,15 @@
         height: auto;
         max-height: 500px;
     }
-
 </style>
 
 <div class="compras-container">
     <h1>Compras</h1>
-    <a href="{% url 'crear_compra' %}" class="btn btn-primary">Registrar Nueva Compra</a>
+    <div>
+        <a href="{% url 'crear_compra' %}" class="btn btn-primary">Registrar Nueva Compra</a>
+        <a href="{% url 'proveedores' %}" class="btn btn-secondary">Proveedores</a>
+        <a href="{% url 'home' %}" class="btn btn-primary mb-3">Volver a inico</a>
+    </div>
     <ul class="compras-list">
         {% for compra in compras %}
         <li class="compra-item">
@@ -169,7 +184,7 @@
             <span>{{ compra.fecha_compra }}</span>
             <span>${{ compra.total }}</span>
             <div class="detalle">
-            {{ compra.detalle }} 
+                {{ compra.detalle }} 
             </div>
             <div class="compra-actions">
                 <a href="{% url 'editar_compra' compra.id %}" class="btn-edit">Editar</a>
@@ -183,7 +198,6 @@
     </ul>
 </div>
 
-
 <div id="previewModal" class="modal">
   <div class="modal-content">
     <span class="close">&times;</span>
@@ -196,43 +210,41 @@
         const modal = document.getElementById('previewModal');
         const previewContent = document.getElementById('previewContent');
         const closeBtn = document.querySelector('.modal .close');
-    
+
         document.querySelectorAll('.btn-view').forEach(function (viewButton) {
-          viewButton.addEventListener('click', function (event) {
-            event.preventDefault();
-            const fileUrl = this.getAttribute('data-file');
-            const fileExtension = fileUrl.split('.').pop().toLowerCase();
-    
-            previewContent.innerHTML = '';
-    
-            if (fileExtension === 'pdf') {
-              // For PDF, let's open it in a new tab or simply download
-              window.open(fileUrl, '_blank');
-            } else if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
-              const img = document.createElement('img');
-              img.src = fileUrl;
-              img.style.width = '100%';
-              previewContent.appendChild(img);
-              modal.style.display = 'block';
-            } else {
-              const p = document.createElement('p');
-              p.textContent = 'Previsualización no disponible para este tipo de archivo. Haz clic en el enlace para descargar.';
-              previewContent.appendChild(p);
-              modal.style.display = 'block';
-            }
-          });
+            viewButton.addEventListener('click', function (event) {
+                event.preventDefault();
+                const fileUrl = this.getAttribute('data-file');
+                const fileExtension = fileUrl.split('.').pop().toLowerCase();
+
+                previewContent.innerHTML = '';
+
+                if (fileExtension === 'pdf') {
+                    window.open(fileUrl, '_blank');
+                } else if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+                    const img = document.createElement('img');
+                    img.src = fileUrl;
+                    img.style.width = '100%';
+                    previewContent.appendChild(img);
+                    modal.style.display = 'block';
+                } else {
+                    const p = document.createElement('p');
+                    p.textContent = 'Previsualización no disponible para este tipo de archivo. Haz clic en el enlace para descargar.';
+                    previewContent.appendChild(p);
+                    modal.style.display = 'block';
+                }
+            });
         });
-    
+
         closeBtn.addEventListener('click', function () {
-          modal.style.display = 'none';
-        });
-    
-        window.addEventListener('click', function (event) {
-          if (event.target === modal) {
             modal.style.display = 'none';
-          }
+        });
+
+        window.addEventListener('click', function (event) {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
         });
     });
-    
 </script>
-{% endblock %} 
+{% endblock %}

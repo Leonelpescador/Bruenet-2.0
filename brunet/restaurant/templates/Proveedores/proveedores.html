@@ -4,6 +4,9 @@
 <div class="container mt-5">
     <h2 class="mb-4">Lista de Proveedores</h2>
     <a href="{% url 'crear_proveedor' %}" class="btn btn-primary mb-3">Agregar Nuevo Proveedor</a>
+    <a href="{% url 'compras' %}" class="btn btn-primary mb-3">Volver a compras</a>
+    <a href="{% url 'home' %}" class="btn btn-primary mb-3">Volver a inico</a>
+    
     <table class="table table-striped">
         <thead>
             <tr>
@@ -30,6 +33,7 @@
             <tr>
                 <td colspan="5" class="text-center">No hay proveedores registrados.</td>
             </tr>
+            
             {% endfor %}
         </tbody>
     </table>

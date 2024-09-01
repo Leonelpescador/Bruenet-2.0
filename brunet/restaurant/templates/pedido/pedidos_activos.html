@@ -1,61 +1,68 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>Pedidos Activos</h1>
+<div class="container">
+    <h1 class="text-center my-4">Pedidos Activos</h1>
 
-{% if pedidos %}
-    <table class="table table-bordered table-hover">
-        <thead>
-            <tr>
-                <th>Mesa</th>
-                <th>Detalle del Pedido</th>
-                <th>Estado</th>
-                <th>Total</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for pedido in pedidos %}
-                <tr>
-                    <td>Mesa {{ pedido.mesa.numero_mesa }}</td>
-                    <td>
-                        <ul>
-                            {% for detalle in pedido.detalles.all %}
-                                <li>{{ detalle.menu.nombre_plato }} - Cantidad: {{ detalle.cantidad }} - Precio: ${{ detalle.precio_unitario }}</li>
-                            {% endfor %}
-                        </ul>
-                    </td>
-                    <td>
-                        <span class="badge 
-                            {% if pedido.estado == 'pendiente' %}
-                                bg-warning text-dark
-                            {% elif pedido.estado == 'preparando' %}
-                                bg-primary
-                            {% elif pedido.estado == 'servido' %}
-                                bg-success
-                            {% elif pedido.estado == 'pagado' %}
-                                bg-secondary
-                            {% endif %}
-                        ">
-                            {{ pedido.estado|capfirst }}
-                        </span>
-                    </td>
-                    <td>${{ pedido.total }}</td>
-                    <td>
-                        
-                        <a href="{% url 'eliminar_pedido' pedido.id %}" class="btn btn-danger mb-1">Eliminar</a>
-                        {% if pedido.estado == 'pendiente' %}
-                            <a href="{% url 'registrar_pago' pedido.id %}" class="btn btn-success">Registrar Pago</a>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-{% else %}
-    <div class="alert alert-info" role="alert">
-        No hay pedidos activos en este momento.
+    {% if pedidos %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Mesa</th>
+                        <th>Detalle del Pedido</th>
+                        <th>Estado</th>
+                        <th>Total</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pedido in pedidos %}
+                        <tr>
+                            <td>{{ pedido.mesa.numero_mesa }}</td>
+                            <td>
+                                <ul class="list-unstyled">
+                                    {% for detalle in pedido.detalles.all %}
+                                        <li>{{ detalle.menu.nombre_plato }} - Cantidad: {{ detalle.cantidad }} - Precio: ${{ detalle.precio_unitario }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if pedido.estado == 'pendiente' %}
+                                        bg-warning text-dark
+                                    {% elif pedido.estado == 'preparando' %}
+                                        bg-primary
+                                    {% elif pedido.estado == 'servido' %}
+                                        bg-success
+                                    {% elif pedido.estado == 'pagado' %}
+                                        bg-secondary
+                                    {% endif %}
+                                ">
+                                    {{ pedido.estado|capfirst }}
+                                </span>
+                            </td>
+                            <td>${{ pedido.total }}</td>
+                            <td>
+                                <a href="{% url 'eliminar_pedido' pedido.id %}" class="btn btn-danger mb-1">Eliminar</a>
+                                {% if pedido.estado == 'pendiente' %}
+                                    <a href="{% url 'registrar_pago' pedido.id %}" class="btn btn-success">Registrar Pago</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            No hay pedidos activos en este momento.
+        </div>
+    {% endif %}
+
+    <div class="text-center mt-4">
+        <a href="{% url 'home' %}" class="btn btn-secondary">Volver a Inicio</a>
     </div>
-{% endif %}
-
+</div>
 {% endblock %}
+

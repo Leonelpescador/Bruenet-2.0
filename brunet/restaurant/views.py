@@ -129,7 +129,7 @@ def eliminar_pedido(request, pedido_id):
     if request.method == 'POST':
         pedido.delete()
         messages.success(request, 'Pedido eliminado con éxito.')
-        return redirect('home')
+        return redirect('pedidos_activos')
     
     return render(request, 'pedido/eliminar_pedido.html', {'pedido': pedido})
 

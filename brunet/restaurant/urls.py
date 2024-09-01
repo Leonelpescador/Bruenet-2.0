@@ -1,3 +1,4 @@
+from django.contrib.auth import views as auth_views
 from django.urls import path, include
 from .views import CustomLoginView
 from . import views
@@ -32,6 +33,7 @@ from .views import (
 urlpatterns =[
     path('login/', views.CustomLoginView.as_view(), name='login'),
     path('', views.home, name='home'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     
     # Clientes
     path('cliente/', views.cliente, name='cliente'),
