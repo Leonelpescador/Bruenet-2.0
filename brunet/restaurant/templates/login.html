@@ -25,7 +25,7 @@
             width: 100%;
             opacity: 0;
             transform: scale(0.8);
-            animation: fadeInAndScale 2s ease forwards; /* Animación suave de aparición y escalado */
+            animation: fadeInAndScale 2s ease forwards;
         }
 
         @keyframes fadeInAndScale {
@@ -92,7 +92,12 @@
             width: 100%;
         }
 
-        button {
+        .button-group {
+            display: flex;
+            gap: 10px; /* Espacio entre los botones */
+        }
+
+        button, .cancel-button {
             font-size: 18px; 
             padding: 12px;
             background-color: #333;
@@ -101,10 +106,21 @@
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            flex: 1; /* Asegura que ambos botones ocupen el mismo ancho */
         }
 
         button:hover {
             background-color: #ff9800;
+        }
+
+        .cancel-button {
+            background-color: #555;
+        }
+
+        .cancel-button:hover {
+            background-color: #999;
         }
     </style>
 </head>
@@ -122,10 +138,14 @@
                     <div class="input-group">
                         {{ form.as_p }}
                     </div>
-                    <button type="submit">Iniciar Sesión</button>
+                    <div class="button-group">
+                        <button type="submit">Iniciar Sesión</button>
+                        <a href="{% url 'cliente' %}" class="cancel-button">Cancelar</a>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 </body>
 </html>
+
