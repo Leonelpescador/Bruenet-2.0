@@ -2,7 +2,6 @@
 
 {% block content %}
 <style>
-
     .compras-container {
         max-width: 800px;
         margin: 50px auto;
@@ -185,7 +184,6 @@
             <span>${{ compra.total }}</span>
             <div class="detalle">
                 {{ compra.detalle }} 
-                
             </div>
             <div class="compra-actions">
                 <a href="{% url 'editar_compra' compra.id %}" class="btn-edit">Editar</a>

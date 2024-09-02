@@ -327,6 +327,7 @@ def eliminar_inventario(request, pk):
         return redirect('inventario')
     return render(request, 'inventario/eliminar_inventario.html', {'inventario': inventario})
 
+
 # Proveedores
 @login_required
 def proveedores(request):
@@ -347,17 +348,25 @@ def crear_proveedor(request):
     else:
         form = ProveedorForm()
 
-    return render(request, 'proveedores/crear_proveedor.html', {'form': form})
+    return render(request, 'proveedores/crear_proveedores.html', {'form': form})  # Aquí debe coincidir con el nombre del archivo
 
 # Edición de Proveedor
+from django.contrib import messages
+from django.shortcuts import render, get_object_or_404, redirect
+from .forms import ProveedorForm
+
 @login_required
 def editar_proveedor(request, pk):
     proveedor = get_object_or_404(Proveedor, pk=pk)
     if request.method == "POST":
         form = ProveedorForm(request.POST, instance=proveedor)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Proveedor editado exitosamente.')
+            # Si el formulario es válido y se han realizado cambios, guardamos el proveedor.
+            if form.has_changed():
+                form.save()
+                messages.success(request, 'Proveedor editado exitosamente.')
+            else:
+                messages.info(request, 'No se realizaron cambios.')
             return redirect('proveedores')
         else:
             messages.error(request, 'Hubo un error al editar el proveedor. Por favor, verifica los datos ingresados.')
@@ -375,7 +384,8 @@ def eliminar_proveedor(request, pk):
         proveedor.delete()
         return redirect('proveedores')
     
-    return render(request, 'proveedores/eliminar_proveedores.html', {'proveedor': proveedor})
+    return render(request, 'proveedores/eliminar_proveedores.html', {'proveedor': proveedor})  # Aquí debe coincidir con el nombre del archivo
+
 
 # Compras
 from django.shortcuts import render, redirect
