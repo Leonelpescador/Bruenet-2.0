@@ -4,6 +4,12 @@
 <div class="container mt-5">
     <h1>Apertura de Caja</h1>
     
+    {% if error_message %}
+        <div class="alert alert-danger">
+            {{ error_message }}
+        </div>
+    {% endif %}
+    
     <form method="post">
         {% csrf_token %}
         <div class="mb-3">

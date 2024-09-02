@@ -23,15 +23,17 @@ from django.contrib.auth.models import User
 # Home View
 @login_required
 def home(request):
+    caja_abierta = Caja.objects.filter(usuario=request.user, estado='abierta').first()
+    
     mesas = Mesa.objects.all()
-    caja = Caja.objects.filter(estado='abierta').first()
 
     context = {
         'mesas': mesas,
-        'caja_abierta': caja,
+        'caja_abierta': caja_abierta,
     }
 
     return render(request, 'home.html', context)
+
 
 
 # Creación de Pedido aca comienza
@@ -457,6 +459,11 @@ from django.contrib.auth.decorators import login_required
 # Apertura de Caja
 @login_required
 def apertura_caja(request):
+    caja_abierta = Caja.objects.filter(usuario=request.user, estado='abierta').first()
+    if caja_abierta:
+        messages.error(request, 'Ya tienes una caja abierta.')
+        return redirect('consulta_caja', caja_id=caja_abierta.id)
+
     if request.method == 'POST':
         form = AperturaCajaForm(request.POST)
         if form.is_valid():
@@ -469,18 +476,26 @@ def apertura_caja(request):
         form = AperturaCajaForm()
     return render(request, 'caja/apertura_caja.html', {'form': form})
 
+
+
 # Consulta de Caja
 @login_required
 def consulta_caja(request, caja_id):
     caja = get_object_or_404(Caja, id=caja_id)
-    transacciones = TransaccionCaja.objects.filter(caja=caja)
+    
 
-    # Filtrar pagos asociados a los pedidos que se realizaron durante la apertura de la caja si lo sacan le va dar error 
-    pedidos_en_caja = Pedido.objects.filter(fecha_pedido__gte=caja.apertura, fecha_pedido__lte=caja.cierre if caja.cierre else timezone.now())
+    transacciones = caja.transacciones.all()
+
+    pedidos_en_caja = Pedido.objects.filter(
+        fecha_pedido__gte=caja.apertura, 
+        fecha_pedido__lte=caja.cierre if caja.cierre else timezone.now()
+    )
+    
     pagos = Pago.objects.filter(pedido__in=pedidos_en_caja)
     
-    monto_total = pagos.aggregate(total=Sum('monto'))['total'] or 0
-    
+    # Calcular el monto total de ingresos en la caja
+    monto_total = transacciones.filter(tipo='ingreso').aggregate(Sum('monto'))['monto__sum'] or 0
+
     return render(request, 'caja/consulta_caja.html', {
         'caja': caja,
         'transacciones': transacciones,
@@ -489,16 +504,18 @@ def consulta_caja(request, caja_id):
     })
 
 
+
+
 # Cierre de Caja
 @login_required
 def cierre_caja(request, caja_id):
-    caja = get_object_or_404(Caja, id=caja_id)
+    caja = get_object_or_404(Caja, id=caja_id, usuario=request.user)  # Asegura que solo pueda cerrar su propia caja
 
     if request.method == 'POST':
         total_final = caja.calcular_total_final()
         caja.cerrar_caja(total_final)
         messages.success(request, f'Caja {caja.id} cerrada exitosamente con un total de {caja.total_final}.')
-        return redirect('home')  # Redirige a la vista deseada después de cerrar la caja
+        return redirect('home')
 
     total_final = caja.calcular_total_final()
     total_ingresos = sum(transaccion.monto for transaccion in caja.transacciones.filter(tipo='ingreso'))
@@ -512,19 +529,27 @@ def cierre_caja(request, caja_id):
 
 
 
-# Registrar Pago
 
+# Registrar Pago
 @login_required
 def registrar_pago(request, pedido_id):
-    caja_abierta = Caja.objects.filter(estado='abierta').first()
+    caja_abierta = Caja.objects.filter(estado='abierta', usuario=request.user).first()
     if not caja_abierta:
         return redirect('apertura_caja')
 
     pedido = get_object_or_404(Pedido, id=pedido_id, estado='pendiente')
     
     if not pedido:
-        messages.error(request, 'No se encontró un pedido válido para registrar el pago.')
+        messages.error(request, f'No se encontró un pedido válido para registrar el pago.')
         return redirect('home')
+    
+    # Verificar si el pedido está en proceso por otro usuario
+    if pedido.en_proceso:
+        messages.error(request, f"Este pedido está siendo procesado por {pedido.usuario_procesando.username}.")
+        return redirect('pedidos_activos')
+    
+    # Marcar el pedido como en proceso y asignar el usuario actual
+    pedido.marcar_en_proceso(request.user)
 
     if request.method == 'POST':
         metodo_pago = request.POST.get('metodo_pago')
@@ -541,9 +566,15 @@ def registrar_pago(request, pedido_id):
         )
         transaccion.save()
 
+        # Marcar el pedido como completado
+        pedido.marcar_completado()
+
         return redirect('consulta_caja', caja_id=caja_abierta.id)
     
     return render(request, 'caja/registrar_pago.html', {'pedido': pedido, 'caja': caja_abierta})
+
+
+
 
 
 
@@ -760,3 +791,13 @@ def eliminar_pago(request, pago_id):
         return redirect('consulta_caja', caja_id=pago.caja.id)
 
     return render(request, 'caja/eliminar_pago.html', {'pago': pago})
+
+
+
+from django.http import HttpResponseForbidden
+
+@login_required
+def mi_vista(request):
+    if not request.user.has_perm('app_name.perm_name'):
+        return HttpResponseForbidden("No tienes permiso para acceder a esta página.")
+    

@@ -10,7 +10,7 @@
         <strong>Total Final:</strong> ${{ total_final }}
     </div>
     
-    {% if not caja.cierre %}
+    {% if not caja.cierre and caja.usuario == request.user %}
     <form method="post">
         {% csrf_token %}
         <input type="hidden" name="total_final" value="{{ total_final }}">

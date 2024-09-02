@@ -68,18 +68,44 @@ class Menu(models.Model):
     
     
     
+from django.utils import timezone
+
+from django.db import models
+from django.conf import settings
+
 class Pedido(models.Model):
     ESTADO_CHOICES = [
         ('pendiente', 'Pendiente'),
     ]
-    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
-    mesa = models.ForeignKey(Mesa, on_delete=models.CASCADE)
+
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    mesa = models.ForeignKey('Mesa', on_delete=models.CASCADE)
     fecha_pedido = models.DateTimeField(auto_now_add=True)
-    total = models.DecimalField(max_digits=14, decimal_places=2, default=0.00)  
+    total = models.DecimalField(max_digits=14, decimal_places=2, default=0.00)
     estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='pendiente')
+    en_proceso = models.BooleanField(default=False)
+    usuario_procesando = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='pedidos_en_proceso'
+    )
 
     def __str__(self):
-        return f'Pedido {self.id}'
+        return f'Pedido {self.id} - Mesa {self.mesa.numero_mesa} - Estado {self.estado}'
+
+    def marcar_en_proceso(self, usuario):
+        self.en_proceso = True
+        self.usuario_procesando = usuario
+        self.save()
+
+    def marcar_completado(self):
+        self.en_proceso = False
+        self.usuario_procesando = None
+        self.save()
+
+
 
 
 class DetallePedido(models.Model):
