@@ -2,6 +2,13 @@
 
 {% block content %}
 <div class="container my-5">
+    <!-- Mostrar el nombre del usuario que ha iniciado sesión -->
+    <div class="d-flex justify-content-start mb-3">
+        <div class="alert alert-info">
+            Usuario: {{ request.user.username }}
+        </div>
+    </div>
+
     <h1 class="text-center mb-4">Mesas del Restaurante</h1>
 
     <div class="caja-container mb-4">
