@@ -27,7 +27,8 @@ from .views import (
     compras,
     editar_compra,
     eliminar_compra,
-    obtener_precio_plato
+    obtener_precio_plato,
+    marcar_servido,
 )
 
 urlpatterns =[
@@ -45,6 +46,7 @@ urlpatterns =[
     path('pedido/modificar/<int:pedido_id>/', views.modificar_pedido, name='modificar_pedido'),
     path('pedido/eliminar/<int:pedido_id>/', views.eliminar_pedido, name='eliminar_pedido'),
     path('obtener_precio_plato/', obtener_precio_plato, name='obtener_precio_plato'),
+    path('pedido/servido/<int:pedido_id>/', marcar_servido, name='marcar_servido'),
 
 
     # Pago 

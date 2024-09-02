@@ -76,6 +76,9 @@ from django.conf import settings
 class Pedido(models.Model):
     ESTADO_CHOICES = [
         ('pendiente', 'Pendiente'),
+        ('preparando', 'Preparando'),
+        ('servido', 'Servido'),
+        ('pagado', 'Pagado'),
     ]
 
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

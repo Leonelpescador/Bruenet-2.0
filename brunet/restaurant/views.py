@@ -137,6 +137,7 @@ def eliminar_pedido(request, pedido_id):
 
 @login_required
 def pedidos_activos(request):
+    Pedido.objects.filter(en_proceso=True, usuario_procesando=request.user).update(en_proceso=False, usuario_procesando=None)
     pedidos = Pedido.objects.filter(estado__in=['pendiente', 'preparando', 'servido'])
     return render(request, 'pedido/pedidos_activos.html', {'pedidos': pedidos})
 
@@ -515,7 +516,12 @@ def cierre_caja(request, caja_id):
         total_final = caja.calcular_total_final()
         caja.cerrar_caja(total_final)
         messages.success(request, f'Caja {caja.id} cerrada exitosamente con un total de {caja.total_final}.')
-        return redirect('home')
+        total_ingresos = sum(transaccion.monto for transaccion in caja.transacciones.filter(tipo='ingreso'))
+        return render(request, 'caja/cierre_caja.html', {
+            'caja': caja,
+            'total_final': total_final,
+            'total_ingresos': total_ingresos,
+        })
 
     total_final = caja.calcular_total_final()
     total_ingresos = sum(transaccion.monto for transaccion in caja.transacciones.filter(tipo='ingreso'))
@@ -530,21 +536,17 @@ def cierre_caja(request, caja_id):
 
 
 
-# Registrar Pago
 @login_required
 def registrar_pago(request, pedido_id):
     caja_abierta = Caja.objects.filter(estado='abierta', usuario=request.user).first()
     if not caja_abierta:
         return redirect('apertura_caja')
 
-    pedido = get_object_or_404(Pedido, id=pedido_id, estado='pendiente')
-    
-    if not pedido:
-        messages.error(request, f'No se encontró un pedido válido para registrar el pago.')
-        return redirect('home')
-    
+    # Permitir registrar pago para pedidos en estado 'servido' o 'pendiente'
+    pedido = get_object_or_404(Pedido, id=pedido_id, estado__in=['servido', 'pendiente'])
+
     # Verificar si el pedido está en proceso por otro usuario
-    if pedido.en_proceso:
+    if pedido.en_proceso and pedido.usuario_procesando != request.user:
         messages.error(request, f"Este pedido está siendo procesado por {pedido.usuario_procesando.username}.")
         return redirect('pedidos_activos')
     
@@ -566,13 +568,31 @@ def registrar_pago(request, pedido_id):
         )
         transaccion.save()
 
-        # Marcar el pedido como completado
+        # Marcar el pedido como completado y liberar el proceso
         pedido.marcar_completado()
 
         return redirect('consulta_caja', caja_id=caja_abierta.id)
     
     return render(request, 'caja/registrar_pago.html', {'pedido': pedido, 'caja': caja_abierta})
 
+
+@login_required
+def marcar_servido(request, pedido_id):
+    pedido = get_object_or_404(Pedido, id=pedido_id, estado='preparando')
+
+    if pedido.en_proceso and pedido.usuario_procesando != request.user:
+        messages.error(request, f"Este pedido está siendo procesado por {pedido.usuario_procesando.username}.")
+        return redirect('pedidos_activos')
+
+    # Marcar el pedido como servido
+    pedido.estado = 'servido'
+    pedido.marcar_completado()  # Liberar el proceso si estaba marcado en proceso
+    pedido.save()
+
+    messages.success(request, f"El pedido {pedido.id} ha sido marcado como servido.")
+    return redirect('pedidos_activos')
+
+#fin
 
 
 
