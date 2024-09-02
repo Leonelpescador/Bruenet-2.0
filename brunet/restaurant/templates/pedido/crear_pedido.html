@@ -8,7 +8,16 @@
         <form id="pedidoForm" method="post">
             {% csrf_token %}
             <div class="form-group mb-3">
-                {{ pedido_form.as_p }}
+                <label for="mesa">Mesa</label>
+                <select id="mesa" name="mesa" class="form-control" required>
+                    <option value="{{ mesa.id }}" selected>Mesa {{ mesa.numero_mesa }}</option>
+                </select>
+            </div>
+            <div class="form-group mb-3">
+                <label for="estado">Estado</label>
+                <select id="estado" name="estado" class="form-control">
+                    <option value="preparando">Preparando</option>
+                </select>
             </div>
 
             <h3 class="text-center mt-4">Seleccionar Platos:</h3>
@@ -27,7 +36,7 @@
                         </select>
                     </div>
                     <div class="form-group mb-2">
-                        {{ form.menu.label_tag }} 
+                        <label for="id_menu-{{ forloop.counter0 }}">Seleccione su menú:</label>
                         {{ form.menu }}
                     </div>
                     <div class="form-group mb-2">
@@ -37,9 +46,11 @@
                     <div class="form-group mb-2">
                         {{ form.precio_unitario.label_tag }} 
                         {{ form.precio_unitario }}
-                    
+                    </div>
+                </div>
                 {% endfor %}
             </div>
+
             <div class="text-center">
                 <button type="submit" class="btn btn-primary">Crear Pedido</button>
                 <a href="{% url 'home' %}" class="btn btn-secondary">Cancelar</a>
