@@ -85,22 +85,44 @@ class MesaForm(forms.ModelForm):
         fields = ['numero_mesa', 'capacidad', 'estado']
 
 # Formulario para Proveedor
+from django import forms
+from .models import Proveedor
+
 class ProveedorForm(forms.ModelForm):
     class Meta:
         model = Proveedor
-        fields = ['nombre_proveedor', 'contact_method', 'telefono', 'email']
+        fields = ['nombre_proveedor', 'telefono', 'email', 'cuit', 'cbu', 'alias_cbu', 'calle', 'numero', 'localidad', 'pais', 'codigo_postal', 'plazo_pago', 'observaciones']
         labels = {
             'nombre_proveedor': 'Nombre del Proveedor',
-            'contact_method': 'Método de Contacto',
             'telefono': 'Teléfono',
             'email': 'Correo Electrónico',
+            'cuit': 'CUIT',
+            'cbu': 'CBU',
+            'alias_cbu': 'Alias CBU',
+            'calle': 'Calle',
+            'numero': 'N°',
+            'localidad': 'Localidad',
+            'pais': 'País',
+            'codigo_postal': 'Código Postal',
+            'plazo_pago': 'Plazo de Pago',
+            'observaciones': 'Observaciones',
         }
         widgets = {
             'nombre_proveedor': forms.TextInput(attrs={'class': 'form-control'}),
-            'contact_method': forms.Select(attrs={'class': 'form-control'}),
             'telefono': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'cuit': forms.TextInput(attrs={'class': 'form-control'}),
+            'cbu': forms.TextInput(attrs={'class': 'form-control'}),
+            'alias_cbu': forms.TextInput(attrs={'class': 'form-control'}),
+            'calle': forms.TextInput(attrs={'class': 'form-control'}),
+            'numero': forms.TextInput(attrs={'class': 'form-control'}),
+            'localidad': forms.TextInput(attrs={'class': 'form-control'}),
+            'pais': forms.TextInput(attrs={'class': 'form-control'}),
+            'codigo_postal': forms.TextInput(attrs={'class': 'form-control'}),
+            'plazo_pago': forms.TextInput(attrs={'class': 'form-control'}),
+            'observaciones': forms.Textarea(attrs={'class': 'form-control'}),
         }
+
 
 # Formulario para Inventario
 class InventarioForm(forms.ModelForm):

@@ -185,18 +185,35 @@ class Inventario(models.Model):
     def __str__(self):
         return f'{self.nombre_producto} ({self.unidad_medida})'
 
+
+
 class Proveedor(models.Model):
+    codigo = models.PositiveIntegerField(unique=True, editable=False)
     nombre_proveedor = models.CharField(max_length=255)
-    contact_method = models.CharField(
-        max_length=10,
-        choices=[('cel_tel', 'Cel/Tel'), ('email', 'Email')],
-        default='cel_tel'  
-    )
+    cuit = models.CharField(max_length=15, blank=True, null=True)
+    cbu = models.CharField(max_length=22, blank=True, null=True)
+    alias_cbu = models.CharField(max_length=100, blank=True, null=True)
+    calle = models.CharField(max_length=255, blank=True, null=True)
+    numero = models.CharField(max_length=10, blank=True, null=True)
+    localidad = models.CharField(max_length=255, blank=True, null=True)
+    pais = models.CharField(max_length=100, blank=True, null=True)
+    codigo_postal = models.CharField(max_length=10, blank=True, null=True)
     telefono = models.CharField(max_length=15, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
+    plazo_pago = models.PositiveIntegerField(blank=True, null=True, help_text="Plazo de pago en días.")
+    observaciones = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return self.nombre_proveedor
+        return f"{self.codigo} - {self.nombre_proveedor}"
+
+    def save(self, *args, **kwargs):
+        if not self.codigo:
+            last_proveedor = Proveedor.objects.all().order_by('codigo').last()
+            if last_proveedor:
+                self.codigo = last_proveedor.codigo + 1
+            else:
+                self.codigo = 1
+        super(Proveedor, self).save(*args, **kwargs)
 
 
 class Compra(models.Model):

@@ -30,7 +30,7 @@
         margin-bottom: 15px;
     }
     
-    input[type="text"], input[type="email"] {
+    input[type="text"], input[type="email"], input[type="number"] {
         width: 100%;
         padding: 10px;
         border-radius: 5px;
@@ -56,12 +56,67 @@
     button:hover {
         background-color: #218838;
     }
-    
-    
 </style>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Guardar Cambios</button>
-</form>
+<div class="container">
+    <form method="post">
+        {% csrf_token %}
+        <p>
+            {{ form.codigo.label_tag }}<br>
+            {{ form.codigo }}
+        </p>
+        <p>
+            {{ form.nombre.label_tag }}<br>
+            {{ form.nombre }}
+        </p>
+        <p>
+            {{ form.cuit.label_tag }}<br>
+            {{ form.cuit }}
+        </p>
+        <p>
+            {{ form.cbu.label_tag }}<br>
+            {{ form.cbu }}
+        </p>
+        <p>
+            {{ form.alias_cbu.label_tag }}<br>
+            {{ form.alias_cbu }}
+        </p>
+        <p>
+            {{ form.calle.label_tag }}<br>
+            {{ form.calle }}
+        </p>
+        <p>
+            {{ form.numero.label_tag }}<br>
+            {{ form.numero }}
+        </p>
+        <p>
+            {{ form.localidad.label_tag }}<br>
+            {{ form.localidad }}
+        </p>
+        <p>
+            {{ form.pais.label_tag }}<br>
+            {{ form.pais }}
+        </p>
+        <p>
+            {{ form.codigo_postal.label_tag }}<br>
+            {{ form.codigo_postal }}
+        </p>
+        <p>
+            {{ form.telefono.label_tag }}<br>
+            {{ form.telefono }}
+        </p>
+        <p>
+            {{ form.email.label_tag }}<br>
+            {{ form.email }}
+        </p>
+        <p>
+            {{ form.plazo_pago.label_tag }}<br>
+            {{ form.plazo_pago }}
+        </p>
+        <p>
+            {{ form.observaciones.label_tag }}<br>
+            {{ form.observaciones }}
+        </p>
+        <button type="submit">Guardar Cambios</button>
+    </form>
+</div>
 {% endblock %}

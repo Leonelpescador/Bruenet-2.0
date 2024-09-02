@@ -336,25 +336,31 @@ def proveedores(request):
 # Creación de Proveedor
 @login_required
 def crear_proveedor(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = ProveedorForm(request.POST)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Proveedor creado exitosamente.')
             return redirect('proveedores')
+        else:
+            messages.error(request, 'Hubo un error al crear el proveedor. Por favor, verifica los datos ingresados.')
     else:
         form = ProveedorForm()
-    
-    return render(request, 'proveedores/crear_proveedores.html', {'form': form})
+
+    return render(request, 'proveedores/crear_proveedor.html', {'form': form})
 
 # Edición de Proveedor
 @login_required
 def editar_proveedor(request, pk):
-    proveedor = Proveedor.objects.get(pk=pk)
+    proveedor = get_object_or_404(Proveedor, pk=pk)
     if request.method == "POST":
         form = ProveedorForm(request.POST, instance=proveedor)
         if form.is_valid():
             form.save()
+            messages.success(request, 'Proveedor editado exitosamente.')
             return redirect('proveedores')
+        else:
+            messages.error(request, 'Hubo un error al editar el proveedor. Por favor, verifica los datos ingresados.')
     else:
         form = ProveedorForm(instance=proveedor)
 

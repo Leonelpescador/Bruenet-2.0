@@ -175,16 +175,17 @@
     <div>
         <a href="{% url 'crear_compra' %}" class="btn btn-primary">Registrar Nueva Compra</a>
         <a href="{% url 'proveedores' %}" class="btn btn-secondary">Proveedores</a>
-        <a href="{% url 'home' %}" class="btn btn-primary mb-3">Volver a inico</a>
+        <a href="{% url 'home' %}" class="btn btn-secondary">Volver a Inicio</a>
     </div>
     <ul class="compras-list">
         {% for compra in compras %}
         <li class="compra-item">
-            <span>{{ compra.proveedor }}</span>
+            <span>{{ compra.proveedor.nombre_proveedor }}</span> 
             <span>{{ compra.fecha_compra }}</span>
             <span>${{ compra.total }}</span>
             <div class="detalle">
                 {{ compra.detalle }} 
+                
             </div>
             <div class="compra-actions">
                 <a href="{% url 'editar_compra' compra.id %}" class="btn-edit">Editar</a>
