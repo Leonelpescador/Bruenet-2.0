@@ -767,6 +767,39 @@ def cambiar_disponibilidad_menu(request, menu_id):
     messages.success(request, 'La disponibilidad del menú ha sido actualizada.')
     return redirect('listar_menu')
 
+#crear categorias para menu
+from .models import Categoria
+from .forms import CategoriaForm
+
+@login_required
+def crear_categoria(request):
+    if request.method == "POST":
+        form = CategoriaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Categoría creada exitosamente.')
+            return redirect('listar_categorias')
+        else:
+            messages.error(request, 'Hubo un error al crear la categoría. Por favor, verifica los datos ingresados.')
+    else:
+        form = CategoriaForm()
+
+    return render(request, 'menu/categoria/crear_categoria.html', {'form': form})
+
+@login_required
+def eliminar_categoria(request, categoria_id):
+    categoria = get_object_or_404(Categoria, id=categoria_id)
+    if request.method == "POST":
+        categoria.delete()
+        messages.success(request, 'Categoría eliminada exitosamente.')
+        return redirect('listar_categorias')
+    return render(request, 'menu/categoria/eliminar_categoria.html', {'categoria': categoria})
+
+@login_required
+def listar_categorias(request):
+    categorias = Categoria.objects.all()
+    return render(request, 'menu/categoria/listar_categorias.html', {'categorias': categorias})
+
 from django.http import HttpResponse
 from .models import Menu
 

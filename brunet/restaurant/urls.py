@@ -29,6 +29,7 @@ from .views import (
     eliminar_compra,
     obtener_precio_plato,
     marcar_servido,
+    crear_categoria, eliminar_categoria, listar_categorias
 )
 
 urlpatterns =[
@@ -106,7 +107,9 @@ urlpatterns =[
     path('menu/eliminar/<int:menu_id>/', views.eliminar_menu, name='eliminar_menu'),
     path('menu/cambiar-disponibilidad/<int:menu_id>/', views.cambiar_disponibilidad_menu, name='cambiar_disponibilidad_menu'),
     path('filtrar_platos_por_categoria/', views.filtrar_platos_por_categoria, name='filtrar_platos_por_categoria'),
-    
+    path('categoria/', listar_categorias, name='listar_categorias'),
+    path('categoria/crear/', crear_categoria, name='crear_categoria'),
+    path('categoria/eliminar/<int:categoria_id>/', eliminar_categoria, name='eliminar_categoria'),
     
     # Caja
     path('caja/pago/crear/', views.crear_pago, name='crear_pago'),
