@@ -68,6 +68,9 @@ urlpatterns =[
     path('inventario/crear/', views.crear_inventario, name='crear_inventario'),
     path('inventario/editar/<int:pk>/', views.editar_inventario, name='editar_inventario'),
     path('inventario/eliminar/<int:pk>/', views.eliminar_inventario, name='eliminar_inventario'),
+    path('inventario/descargar_plantilla/', views.descargar_plantilla_inventario, name='descargar_plantilla_inventario'),
+    path('inventario/cargar/', views.cargar_inventario_masivo, name='cargar_inventario_masivo'),
+    path('inventario/exportar/', views.exportar_inventario, name='exportar_inventario'),
     
     
     # Proveedor

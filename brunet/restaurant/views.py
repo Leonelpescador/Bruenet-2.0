@@ -991,3 +991,122 @@ def cargar_proveedores_masivo(request):
             return redirect('cargar_proveedores_masivo')
 
     return render(request, 'proveedores/cargar_proveedores.html')
+
+
+#para inventario 
+
+from .models import Inventario
+@login_required
+def descargar_plantilla_inventario(request):
+    # Crear un libro de trabajo y una hoja
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Inventario"
+
+    # Definir los encabezados de las columnas
+    headers = ['Nombre Producto', 'Cantidad Actual', 'Cantidad Mínima', 'Unidad de Medida']
+    ws.append(headers)
+
+    # Configurar la respuesta HTTP para la descarga del archivo
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=plantilla_inventario.xlsx'
+
+    wb.save(response)
+    return response
+
+@login_required
+def cargar_inventario_masivo(request):
+    if request.method == "POST":
+        if 'archivo_excel' in request.FILES:
+            archivo_excel = request.FILES['archivo_excel']
+
+            try:
+                # Cargar el archivo Excel en un DataFrame de pandas
+                df = pd.read_excel(archivo_excel)
+
+                # Verificar encabezados correctos
+                headers = ['Nombre Producto', 'Cantidad Actual', 'Cantidad Mínima', 'Unidad de Medida']
+                if list(df.columns) != headers:
+                    mensajes = f"Encabezados incorrectos. Se esperaba: {headers} y se encontró {list(df.columns)}."
+                    messages.error(request, mensajes)
+                    return render(request, 'inventario/excel/cargar_inventario.html')
+
+                # Lista para almacenar los errores y advertencias
+                errores = []
+                advertencias = []
+
+                # Iterar sobre las filas del DataFrame
+                for index, row in df.iterrows():
+                    columnas_vacias = []
+                    if pd.isna(row['Nombre Producto']):
+                        columnas_vacias.append('Nombre Producto')
+                    if pd.isna(row['Cantidad Actual']):
+                        columnas_vacias.append('Cantidad Actual')
+                    if pd.isna(row['Cantidad Mínima']):
+                        columnas_vacias.append('Cantidad Mínima')
+                    if pd.isna(row['Unidad de Medida']):
+                        columnas_vacias.append('Unidad de Medida')
+
+                    if columnas_vacias:
+                        advertencias.append(f"Fila {index + 1}: Las siguientes columnas están vacías: {', '.join(columnas_vacias)}")
+
+                    try:
+                        Inventario.objects.update_or_create(
+                            nombre_producto=row['Nombre Producto'],
+                            defaults={
+                                'cantidad_actual': row['Cantidad Actual'],
+                                'cantidad_minima': row['Cantidad Mínima'],
+                                'unidad_medida': row['Unidad de Medida']
+                            }
+                        )
+                    except Exception as e:
+                        errores.append(f"Fila {index + 1}: {str(e)}")
+
+                if errores:
+                    messages.error(request, "Se encontraron errores al cargar algunos productos.")
+                    return render(request, 'inventario/excel/cargar_inventario.html', {'errores': errores})
+                else:
+                    messages.success(request, "Inventario cargado exitosamente.")
+                    if advertencias:
+                        messages.warning(request, "Advertencias encontradas en el archivo:")
+                        return render(request, 'inventario/excel/cargar_inventario.html', {'advertencias': advertencias})
+
+            except Exception as e:
+                messages.error(request, f"Error al procesar el archivo: {str(e)}")
+                return redirect('cargar_inventario_masivo')
+        else:
+            messages.error(request, "Por favor, sube un archivo Excel.")
+            return redirect('cargar_inventario_masivo')
+
+    return render(request, 'inventario/excel/cargar_inventario.html')
+
+@login_required
+def exportar_inventario(request):
+    # Exportar el inventario actual
+    inventario = Inventario.objects.all()
+
+    # Crear un libro de trabajo y una hoja
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Inventario Actual"
+
+    # Definir los encabezados de las columnas
+    headers = ['Nombre Producto', 'Cantidad Actual', 'Cantidad Mínima', 'Unidad de Medida']
+    ws.append(headers)
+
+    # Rellenar con los datos actuales del inventario
+    for item in inventario:
+        ws.append([
+            item.nombre_producto,
+            item.cantidad_actual,
+            item.cantidad_minima,
+            item.unidad_medida
+        ])
+
+    # Configurar la respuesta HTTP para la descarga del archivo
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=inventario_actual.xlsx'
+
+    wb.save(response)
+    return response
+
