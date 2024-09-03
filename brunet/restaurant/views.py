@@ -360,20 +360,22 @@ def editar_proveedor(request, pk):
     proveedor = get_object_or_404(Proveedor, pk=pk)
     if request.method == "POST":
         form = ProveedorForm(request.POST, instance=proveedor)
-        if form.is_valid():
-            # Si el formulario es válido y se han realizado cambios, guardamos el proveedor.
-            if form.has_changed():
+        if form.has_changed():  # Verifica si se ha realizado algún cambio
+            if form.is_valid():
                 form.save()
                 messages.success(request, 'Proveedor editado exitosamente.')
+                return redirect('proveedores')
             else:
-                messages.info(request, 'No se realizaron cambios.')
-            return redirect('proveedores')
+                messages.error(request, 'Hubo un error al editar el proveedor. Por favor, verifica los datos ingresados.')
         else:
-            messages.error(request, 'Hubo un error al editar el proveedor. Por favor, verifica los datos ingresados.')
+            messages.info(request, 'No se han realizado cambios.')
+            return redirect('proveedores')
     else:
         form = ProveedorForm(instance=proveedor)
 
     return render(request, 'proveedores/editar_proveedores.html', {'form': form})
+
+
 
 
 # Eliminación de Proveedor

@@ -4,10 +4,10 @@
 <style>
     body {
         font-family: 'Arial', sans-serif;
-        margin: 0;
-        padding: 0;
         background-color: #f4f4f4;
         color: #333;
+        margin: 0;
+        padding: 0;
     }
     
     .container {
@@ -16,20 +16,21 @@
         padding: 20px;
         background-color: #fff;
         border-radius: 10px;
-        box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
     
     h1 {
         text-align: center;
         color: #333;
         margin-bottom: 30px;
+        font-size: 24px;
     }
     
     form p {
         margin-bottom: 15px;
     }
     
-    input[type="text"], input[type="email"], input[type="number"] {
+    input[type="text"], input[type="email"], input[type="number"], textarea {
         width: 100%;
         padding: 10px;
         border-radius: 5px;
@@ -55,80 +56,56 @@
     button:hover {
         background-color: #218838;
     }
+
+    .btn-cancelar {
+        background-color: #dc3545;
+        color: #fff;
+        text-align: center;
+        padding: 10px;
+        border-radius: 5px;
+        display: block;
+        text-decoration: none;
+        margin-top: 10px;
+        font-size: 16px;
+    }
+    
+    .btn-cancelar:hover {
+        background-color: #c82333;
+    }
+
+    @media (max-width: 600px) {
+        .container {
+            padding: 15px;
+            margin: 20px auto;
+        }
+    }
 </style>
+
 <div class="container">
     <h1>Editar Proveedor</h1>
-    
-    {% if messages %}
-    <div class="alert alert-dismissible fade show mt-3" role="alert">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            {{ message }}
-        </div>
-        {% endfor %}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    {% endif %}
-    
     <form method="post">
         {% csrf_token %}
-        <p>
-            {{ form.codigo.label_tag }}<br>
-            {{ form.codigo }}
-        </p>
-        <p>
-            {{ form.nombre.label_tag }}<br>
-            {{ form.nombre }}
-        </p>
-        <p>
-            {{ form.cuit.label_tag }}<br>
-            {{ form.cuit }}
-        </p>
-        <p>
-            {{ form.cbu.label_tag }}<br>
-            {{ form.cbu }}
-        </p>
-        <p>
-            {{ form.alias_cbu.label_tag }}<br>
-            {{ form.alias_cbu }}
-        </p>
-        <p>
-            {{ form.calle.label_tag }}<br>
-            {{ form.calle }}
-        </p>
-        <p>
-            {{ form.numero.label_tag }}<br>
-            {{ form.numero }}
-        </p>
-        <p>
-            {{ form.localidad.label_tag }}<br>
-            {{ form.localidad }}
-        </p>
-        <p>
-            {{ form.pais.label_tag }}<br>
-            {{ form.pais }}
-        </p>
-        <p>
-            {{ form.codigo_postal.label_tag }}<br>
-            {{ form.codigo_postal }}
-        </p>
-        <p>
-            {{ form.telefono.label_tag }}<br>
-            {{ form.telefono }}
-        </p>
-        <p>
-            {{ form.email.label_tag }}<br>
-            {{ form.email }}
-        </p>
-        <p>
-            {{ form.plazo_pago.label_tag }}<br>
-            {{ form.plazo_pago }}
-        </p>
-        <p>
-            {{ form.observaciones.label_tag }}<br>
-            {{ form.observaciones }}
-        </p>
+        {{ form.as_p }}
         <button type="submit">Guardar Cambios</button>
+        <a href="{% url 'proveedores' %}" class="btn-cancelar">Cancelar</a>
     </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        let formChanged = false;
+
+        form.addEventListener('input', function() {
+            formChanged = true;
+        });
+
+        window.addEventListener('beforeunload', function(e) {
+            if (formChanged) {
+                e.preventDefault();
+                e.returnValue = 'Tienes cambios sin guardar. ¿Estás seguro de que deseas salir de la página?';
+            }
+        });
+    });
+</script>
 {% endblock %}
