@@ -467,6 +467,7 @@ def eliminar_mesa(request, mesa_id):
     return redirect('lista_mesas')
 
 
+
 # Flujo de Caja
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages

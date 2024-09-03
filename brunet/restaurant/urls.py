@@ -96,6 +96,7 @@ urlpatterns =[
     path('mesa/editar/<int:pk>/', views.editar_mesa, name='editar_mesa'),
     
     
+    
     # Caja 
     path('caja/apertura/', views.apertura_caja, name='apertura_caja'),
     path('caja/consulta/<int:caja_id>/', views.consulta_caja, name='consulta_caja'),
