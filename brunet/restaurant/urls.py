@@ -74,6 +74,8 @@ urlpatterns =[
     path('proveedores/crear/', views.crear_proveedor, name='crear_proveedor'),
     path('proveedores/editar/<int:pk>/', views.editar_proveedor, name='editar_proveedor'),
     path('proveedores/eliminar/<int:pk>/', views.eliminar_proveedor, name='eliminar_proveedor'),
+    path('proveedores/cargar/', views.cargar_proveedores_masivo, name='cargar_proveedores_masivo'),
+    path('proveedores/descargar-plantilla/', views.descargar_plantilla_proveedores, name='descargar_plantilla_proveedores'),
     
     
     # Compra 

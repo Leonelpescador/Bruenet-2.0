@@ -839,3 +839,123 @@ def mi_vista(request):
     if not request.user.has_perm('app_name.perm_name'):
         return HttpResponseForbidden("No tienes permiso para acceder a esta página.")
     
+    
+#Procesos que tienen excel.     
+
+import openpyxl
+from django.http import HttpResponse
+
+import openpyxl
+from django.shortcuts import render
+from django.contrib import messages
+
+
+
+@login_required
+def descargar_plantilla_proveedores(request):
+    # Crear un libro de trabajo y una hoja
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Proveedores"
+
+    # Definir los encabezados de las columnas . aca es la estrucutra de la db. asi que ojo  si modifican le va a dar error chicos. 
+    headers = ['Código', 'Nombre', 'CUIT', 'CBU', 'Alias CBU', 'Calle', 'N°', 'Localidad', 'País', 'Código Postal', 'Teléfono', 'Email', 'Plazo de Pago', 'Observaciones']
+    ws.append(headers)
+
+    # Configurar la respuesta HTTP para la descarga del archivo
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=plantilla_proveedores.xlsx'
+
+    wb.save(response)
+    return response
+
+
+@login_required
+def cargar_proveedores_masivo(request):
+    if request.method == "POST":
+        archivo_excel = request.FILES['archivo_excel']
+        errores = []
+        advertencias = []
+
+        try:
+            # Cargar el archivo Excel
+            wb = openpyxl.load_workbook(archivo_excel)
+            ws = wb.active
+
+            # Verificar encabezados correctos
+            headers = ['Código', 'Nombre', 'CUIT', 'CBU', 'Alias CBU', 'Calle', 'N°', 'Localidad', 'País', 'Código Postal', 'Teléfono', 'Email', 'Plazo de Pago', 'Observaciones']
+            fila_encabezado = [cell.value for cell in ws[1]]
+            
+            if fila_encabezado != headers:
+                mensajes = f"Encabezados incorrectos. Se esperaba: {headers} y se encontró {fila_encabezado}."
+                messages.error(request, mensajes)
+                return render(request, 'proveedores/cargar_proveedores.html')
+
+            # Iterar sobre las filas del archivo Excel (saltando la primera fila que contiene los encabezados)
+            for i, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+                codigo, nombre, cuit, cbu, alias_cbu, calle, numero, localidad, pais, codigo_postal, telefono, email, plazo_pago, observaciones = row
+                
+                # Identificar columnas vacías y agregar advertencias
+                columnas_vacias = []
+                if not nombre:
+                    columnas_vacias.append('Nombre')
+                if not cuit:
+                    columnas_vacias.append('CUIT')
+                if not cbu:
+                    columnas_vacias.append('CBU')
+                if not alias_cbu:
+                    columnas_vacias.append('Alias CBU')
+                if not calle:
+                    columnas_vacias.append('Calle')
+                if not numero:
+                    columnas_vacias.append('N°')
+                if not localidad:
+                    columnas_vacias.append('Localidad')
+                if not pais:
+                    columnas_vacias.append('País')
+                if not codigo_postal:
+                    columnas_vacias.append('Código Postal')
+                if not telefono:
+                    columnas_vacias.append('Teléfono')
+                if not email:
+                    columnas_vacias.append('Email')
+                if not plazo_pago:
+                    columnas_vacias.append('Plazo de Pago')
+                if not observaciones:
+                    columnas_vacias.append('Observaciones')
+
+                if columnas_vacias:
+                    advertencias.append(f"Fila {i}: Las siguientes columnas están vacías: {', '.join(columnas_vacias)}")
+
+                # Si no hay errores, crear el proveedor
+                if not errores:
+                    Proveedor.objects.create(
+                        codigo=codigo,
+                        nombre=nombre,
+                        cuit=cuit,
+                        cbu=cbu,
+                        alias_cbu=alias_cbu,
+                        calle=calle,
+                        numero=numero,
+                        localidad=localidad,
+                        pais=pais,
+                        codigo_postal=codigo_postal,
+                        telefono=telefono,
+                        email=email,
+                        plazo_pago=plazo_pago,
+                        observaciones=observaciones
+                    )
+
+            if errores:
+                messages.error(request, "Errores encontrados en el archivo:")
+                return render(request, 'proveedores/cargar_proveedores.html', {'errores': errores})
+            else:
+                messages.success(request, "Proveedores cargados exitosamente.")
+                if advertencias:
+                    messages.warning(request, "Advertencias encontradas en el archivo:")
+                    return render(request, 'proveedores/cargar_proveedores.html', {'advertencias': advertencias})
+
+        except Exception as e:
+            messages.error(request, f"Error al procesar el archivo: {str(e)}")
+    
+    return render(request, 'proveedores/cargar_proveedores.html')
