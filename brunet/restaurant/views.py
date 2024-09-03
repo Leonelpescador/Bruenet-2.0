@@ -842,14 +842,13 @@ def mi_vista(request):
     
 #Procesos que tienen excel.     
 
+import pandas as pd
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Proveedor
+from django.contrib.auth.decorators import login_required
 import openpyxl
 from django.http import HttpResponse
-
-import openpyxl
-from django.shortcuts import render
-from django.contrib import messages
-
-
 
 @login_required
 def descargar_plantilla_proveedores(request):
@@ -858,8 +857,8 @@ def descargar_plantilla_proveedores(request):
     ws = wb.active
     ws.title = "Proveedores"
 
-    # Definir los encabezados de las columnas . aca es la estrucutra de la db. asi que ojo  si modifican le va a dar error chicos. 
-    headers = ['Código', 'Nombre', 'CUIT', 'CBU', 'Alias CBU', 'Calle', 'N°', 'Localidad', 'País', 'Código Postal', 'Teléfono', 'Email', 'Plazo de Pago', 'Observaciones']
+    # Definir los encabezados de las columnas según la estructura de la base de datos
+    headers = ['Nombre', 'CUIT', 'CBU', 'Alias CBU', 'Calle', 'N°', 'Localidad', 'País', 'Código Postal', 'Teléfono', 'Email', 'Plazo de Pago', 'Observaciones']
     ws.append(headers)
 
     # Configurar la respuesta HTTP para la descarga del archivo
@@ -869,93 +868,93 @@ def descargar_plantilla_proveedores(request):
     wb.save(response)
     return response
 
-
 @login_required
 def cargar_proveedores_masivo(request):
     if request.method == "POST":
-        archivo_excel = request.FILES['archivo_excel']
-        errores = []
-        advertencias = []
+        if 'archivo_excel' in request.FILES:
+            archivo_excel = request.FILES['archivo_excel']
 
-        try:
-            # Cargar el archivo Excel
-            wb = openpyxl.load_workbook(archivo_excel)
-            ws = wb.active
+            try:
+                # Cargar el archivo Excel en un DataFrame de pandas
+                df = pd.read_excel(archivo_excel)
 
-            # Verificar encabezados correctos
-            headers = ['Código', 'Nombre', 'CUIT', 'CBU', 'Alias CBU', 'Calle', 'N°', 'Localidad', 'País', 'Código Postal', 'Teléfono', 'Email', 'Plazo de Pago', 'Observaciones']
-            fila_encabezado = [cell.value for cell in ws[1]]
-            
-            if fila_encabezado != headers:
-                mensajes = f"Encabezados incorrectos. Se esperaba: {headers} y se encontró {fila_encabezado}."
-                messages.error(request, mensajes)
-                return render(request, 'proveedores/cargar_proveedores.html')
+                # Verificar encabezados correctos
+                headers = ['Nombre', 'CUIT', 'CBU', 'Alias CBU', 'Calle', 'N°', 'Localidad', 'País', 'Código Postal', 'Teléfono', 'Email', 'Plazo de Pago', 'Observaciones']
+                if list(df.columns) != headers:
+                    mensajes = f"Encabezados incorrectos. Se esperaba: {headers} y se encontró {list(df.columns)}."
+                    messages.error(request, mensajes)
+                    return render(request, 'proveedores/cargar_proveedores.html')
 
-            # Iterar sobre las filas del archivo Excel (saltando la primera fila que contiene los encabezados)
-            for i, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
-                codigo, nombre, cuit, cbu, alias_cbu, calle, numero, localidad, pais, codigo_postal, telefono, email, plazo_pago, observaciones = row
-                
-                # Identificar columnas vacías y agregar advertencias
-                columnas_vacias = []
-                if not nombre:
-                    columnas_vacias.append('Nombre')
-                if not cuit:
-                    columnas_vacias.append('CUIT')
-                if not cbu:
-                    columnas_vacias.append('CBU')
-                if not alias_cbu:
-                    columnas_vacias.append('Alias CBU')
-                if not calle:
-                    columnas_vacias.append('Calle')
-                if not numero:
-                    columnas_vacias.append('N°')
-                if not localidad:
-                    columnas_vacias.append('Localidad')
-                if not pais:
-                    columnas_vacias.append('País')
-                if not codigo_postal:
-                    columnas_vacias.append('Código Postal')
-                if not telefono:
-                    columnas_vacias.append('Teléfono')
-                if not email:
-                    columnas_vacias.append('Email')
-                if not plazo_pago:
-                    columnas_vacias.append('Plazo de Pago')
-                if not observaciones:
-                    columnas_vacias.append('Observaciones')
+                # Lista para almacenar los errores y advertencias
+                errores = []
+                advertencias = []
 
-                if columnas_vacias:
-                    advertencias.append(f"Fila {i}: Las siguientes columnas están vacías: {', '.join(columnas_vacias)}")
+                # Iterar sobre las filas del DataFrame
+                for index, row in df.iterrows():
+                    columnas_vacias = []
+                    if pd.isna(row['Nombre']):
+                        columnas_vacias.append('Nombre')
+                    if pd.isna(row['CUIT']):
+                        columnas_vacias.append('CUIT')
+                    if pd.isna(row['CBU']):
+                        columnas_vacias.append('CBU')
+                    if pd.isna(row['Alias CBU']):
+                        columnas_vacias.append('Alias CBU')
+                    if pd.isna(row['Calle']):
+                        columnas_vacias.append('Calle')
+                    if pd.isna(row['N°']):
+                        columnas_vacias.append('N°')
+                    if pd.isna(row['Localidad']):
+                        columnas_vacias.append('Localidad')
+                    if pd.isna(row['País']):
+                        columnas_vacias.append('País')
+                    if pd.isna(row['Código Postal']):
+                        columnas_vacias.append('Código Postal')
+                    if pd.isna(row['Teléfono']):
+                        columnas_vacias.append('Teléfono')
+                    if pd.isna(row['Email']):
+                        columnas_vacias.append('Email')
+                    if pd.isna(row['Plazo de Pago']):
+                        columnas_vacias.append('Plazo de Pago')
+                    if pd.isna(row['Observaciones']):
+                        columnas_vacias.append('Observaciones')
 
-                # Si no hay errores, crear el proveedor
-                if not errores:
-                    Proveedor.objects.create(
-                        codigo=codigo,
-                        nombre=nombre,
-                        cuit=cuit,
-                        cbu=cbu,
-                        alias_cbu=alias_cbu,
-                        calle=calle,
-                        numero=numero,
-                        localidad=localidad,
-                        pais=pais,
-                        codigo_postal=codigo_postal,
-                        telefono=telefono,
-                        email=email,
-                        plazo_pago=plazo_pago,
-                        observaciones=observaciones
-                    )
+                    if columnas_vacias:
+                        advertencias.append(f"Fila {index + 1}: Las siguientes columnas están vacías: {', '.join(columnas_vacias)}")
 
-            if errores:
-                messages.error(request, "Errores encontrados en el archivo:")
-                return render(request, 'proveedores/cargar_proveedores.html', {'errores': errores})
-            else:
-                messages.success(request, "Proveedores cargados exitosamente.")
-                if advertencias:
-                    messages.warning(request, "Advertencias encontradas en el archivo:")
+                    try:
+                        Proveedor.objects.create(
+                            nombre_proveedor=row['Nombre'],
+                            cuit=row.get('CUIT', ''),
+                            cbu=row.get('CBU', ''),
+                            alias_cbu=row.get('Alias CBU', ''),
+                            calle=row.get('Calle', ''),
+                            numero=row.get('N°', ''),
+                            localidad=row.get('Localidad', ''),
+                            pais=row.get('País', ''),
+                            codigo_postal=row.get('Código Postal', ''),
+                            telefono=row.get('Teléfono', ''),
+                            email=row.get('Email', ''),
+                            plazo_pago=row.get('Plazo de Pago', None),
+                            observaciones=row.get('Observaciones', '')
+                        )
+                    except Exception as e:
+                        errores.append(f"Fila {index + 1}: {str(e)}")
+
+                if errores:
+                    messages.error(request, "Se encontraron errores al cargar algunos proveedores.")
+                    return render(request, 'proveedores/cargar_proveedores.html', {'errores': errores})
+                else:
+                    messages.success(request, "Proveedores cargados exitosamente.")
+                    if advertencias:
+                        messages.warning(request, "Advertencias encontradas en el archivo:")
                     return render(request, 'proveedores/cargar_proveedores.html', {'advertencias': advertencias})
 
-        except Exception as e:
-            messages.error(request, f"Error al procesar el archivo: {str(e)}")
-    
+            except Exception as e:
+                messages.error(request, f"Error al procesar el archivo: {str(e)}")
+                return redirect('cargar_proveedores_masivo')
+        else:
+            messages.error(request, "Por favor, sube un archivo Excel.")
+            return redirect('cargar_proveedores_masivo')
+
     return render(request, 'proveedores/cargar_proveedores.html')

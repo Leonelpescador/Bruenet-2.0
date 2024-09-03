@@ -39,7 +39,7 @@
 
     <div class="card">
         <div class="card-body">
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" id="uploadForm">
                 {% csrf_token %}
                 <div class="mb-3">
                     <label for="archivo_excel" class="form-label">Subir Archivo Excel</label>
@@ -52,4 +52,14 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('uploadForm').addEventListener('submit', function(event) {
+        var fileInput = document.getElementById('archivo_excel');
+        if (!fileInput.value) {
+            event.preventDefault();
+            alert('Por favor, selecciona un archivo Excel antes de enviar.');
+        }
+    });
+</script>
 {% endblock %}
