@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="container mt-5">
     <h1 class="text-center">Crear Pedido para la Mesa {{ mesa.numero_mesa }}</h1>
 
     <div class="form-container" style="max-width: 800px; margin: 0 auto;">
-        <form id="pedidoForm" method="post" action="{% url 'crear_pedido' mesa.id %}">
+        <form id="pedidoForm" method="post">
             {% csrf_token %}
             <div class="form-group mb-3">
                 <label for="mesa">Mesa</label>
@@ -23,7 +24,7 @@
             <h3 class="text-center mt-4">Seleccionar Platos:</h3>
             <div class="form-group mb-3">
                 <label for="categoria">Filtrar por Categoría:</label>
-                <select id="categoria" class="form-control categoria-select">
+                <select id="categoria" class="form-control categoria-select" onchange="filtrarPlatos()">
                     <option value="">Selecciona una Categoría</option>
                     {% for categoria in categorias %}
                         <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
@@ -36,8 +37,8 @@
             </div>
 
             <h3 class="text-center mt-4">Pedido Seleccionado:</h3>
-            <div id="pedido-seleccionado" class="mb-4">
-                <!-- Aquí se agregarán los platos seleccionados con checkbox -->
+            <div id="pedido-seleccionado">
+                <!-- Aquí se agregan los platos seleccionados con cantidad -->
             </div>
 
             <div class="text-center mt-3">
@@ -47,111 +48,99 @@
         </form>
     </div>
 </div>
+
 <script type="text/javascript">
-    $(document).ready(function() {
-        var platosContainer = $('#platos-container');
-        var pedidoSeleccionado = $('#pedido-seleccionado');
+    // Función para filtrar platos por categoría
+    function filtrarPlatos() {
+        var categoriaId = document.querySelector('.categoria-select').value;
+        var platosContainer = document.getElementById('platos-container');
 
-        // Filtrar platos por categoría
-        $('.categoria-select').on('change', function() {
-            var categoriaId = $(this).val();
-
-            $.ajax({
-                url: "{% url 'filtrar_platos_por_categoria' %}",
-                data: {
-                    'categoria_id': categoriaId
-                },
-                success: function(data) {
-                    platosContainer.html(data);  // Cargar las tarjetas de platos en el contenedor
-                }
+        fetch(`{% url 'filtrar_platos_por_categoria' %}?categoria_id=${categoriaId}`)
+            .then(response => response.text())
+            .then(data => {
+                platosContainer.innerHTML = data;  // Renderizar los platos en el contenedor
             });
-        });
+    }
 
-        // Función para agregar platos al pedido con un checkbox
-        $(document).on('change', '.checkbox-plato', function() {
-            var platoId = $(this).data('id');
-            var nombrePlato = $(this).data('nombre');
-            var precioPlato = $(this).data('precio');
-            var imagenPlato = $(this).data('imagen');
-            var cantidad = 1; // Iniciar la cantidad en 1
+    // Función para agregar platos al pedido
+    function agregarAlPedido(platoId, nombrePlato, precioPlato, imagenPlato) {
+        var pedidoSeleccionado = document.getElementById('pedido-seleccionado');
+        var cantidad = 1; // Iniciar la cantidad en 1
 
-            if ($(this).is(':checked')) {
-                // Crear el HTML para agregar el plato seleccionado al pedido
-                var pedidoHtml = `
-                    <div class="pedido-item mb-3" data-id="${platoId}">
-                        <div class="d-flex justify-content-between">
-                            <img src="${imagenPlato}" alt="${nombrePlato}" style="width: 50px; height: 50px;">
-                            <div class="pedido-nombre">${nombrePlato}</div>
-                            <div class="pedido-precio">${precioPlato}</div>
-                            <div class="pedido-cantidad">
-                                <button class="btn btn-sm btn-danger decremento">-</button>
-                                <input type="text" value="${cantidad}" readonly style="width: 30px; text-align: center;">
-                                <button class="btn btn-sm btn-success incremento">+</button>
-                            </div>
+        // Verificar si el plato ya está agregado
+        var existe = pedidoSeleccionado.querySelector(`div[data-id="${platoId}"]`);
+        if (!existe) {
+            // Crear el HTML para agregar el plato seleccionado al pedido
+            var pedidoHtml = `
+                <div class="pedido-item mb-3" data-id="${platoId}">
+                    <div class="d-flex justify-content-between">
+                        <img src="${imagenPlato}" alt="${nombrePlato}" style="width: 50px; height: 50px;">
+                        <div class="pedido-nombre">${nombrePlato}</div>
+                        <div class="pedido-precio">${precioPlato}</div>
+                        <div class="pedido-cantidad">
+                            <button class="btn btn-sm btn-danger decremento" onclick="decrementarCantidad(this)">-</button>
+                            <input type="text" value="${cantidad}" readonly style="width: 30px; text-align: center;">
+                            <button class="btn btn-sm btn-success incremento" onclick="incrementarCantidad(this)">+</button>
                         </div>
                     </div>
-                `;
-                pedidoSeleccionado.append(pedidoHtml);
+                </div>
+            `;
+            pedidoSeleccionado.insertAdjacentHTML('beforeend', pedidoHtml);
+        }
+    }
+
+    // Incrementar la cantidad de platos
+    function incrementarCantidad(button) {
+        var input = button.previousElementSibling;
+        input.value = parseInt(input.value) + 1;
+    }
+
+    // Decrementar la cantidad de platos
+    function decrementarCantidad(button) {
+        var input = button.nextElementSibling;
+        if (parseInt(input.value) > 1) {
+            input.value = parseInt(input.value) - 1;
+        }
+    }
+
+    // Enviar el pedido al servidor
+    document.getElementById('pedidoForm').onsubmit = function(event) {
+        event.preventDefault(); // Prevenir el envío tradicional del formulario
+
+        var pedidoData = [];
+        var pedidoSeleccionado = document.getElementById('pedido-seleccionado');
+        pedidoSeleccionado.querySelectorAll('.pedido-item').forEach(function(item) {
+            var platoId = item.getAttribute('data-id');
+            var cantidad = item.querySelector('input').value;
+            pedidoData.push({ plato_id: platoId, cantidad: cantidad });
+        });
+
+        if (pedidoData.length === 0) {
+            alert("No has seleccionado ningún plato.");
+            return;
+        }
+
+        // Enviar el pedido solo cuando se haga clic en "Crear Pedido"
+        fetch("{% url 'crear_pedido' mesa.id %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": document.querySelector('input[name="csrfmiddlewaretoken"]').value
+            },
+            body: JSON.stringify({ pedido: pedidoData })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Pedido creado con éxito.');
+                window.location.href = "{% url 'pedidos_activos' %}";
             } else {
-                // Eliminar el plato de la lista si se desmarca
-                pedidoSeleccionado.find(`div[data-id="${platoId}"]`).remove();
+                alert('Error al crear el pedido: ' + data.error);
             }
+        })
+        .catch(error => {
+            alert('Hubo un error al procesar el pedido. Por favor, intenta nuevamente.');
         });
-
-        // Incrementar la cantidad
-        $(document).on('click', '.incremento', function() {
-            var input = $(this).siblings('input');
-            var currentVal = parseInt(input.val());
-            input.val(currentVal + 1);
-        });
-
-        // Decrementar la cantidad
-        $(document).on('click', '.decremento', function() {
-            var input = $(this).siblings('input');
-            var currentVal = parseInt(input.val());
-            if (currentVal > 1) {
-                input.val(currentVal - 1);
-            }
-        });
-
-        // Enviar el pedido al servidor solo cuando el usuario haga clic en "Crear Pedido"
-        $('#pedidoForm').submit(function(event) {
-            event.preventDefault(); // Prevenir el envío tradicional del formulario
-
-            var pedidoData = [];
-            $('#pedido-seleccionado').find('.pedido-item').each(function() {
-                var platoId = $(this).data('id');
-                var cantidad = $(this).find('input').val();
-                pedidoData.push({ plato_id: platoId, cantidad: cantidad });
-            });
-
-            if (pedidoData.length === 0) {
-                alert("No has seleccionado ningún plato.");
-                return;
-            }
-
-            // Enviar el pedido solo cuando se haga clic en "Crear Pedido"
-            $.ajax({
-                url: "{% url 'crear_pedido' mesa.id %}",
-                type: "POST",
-                data: {
-                    csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
-                    pedido: JSON.stringify(pedidoData)  // Enviar la lista de platos seleccionados
-                },
-                success: function(response) {
-                    if (response.success) {
-                        alert('Pedido creado con éxito.');
-                        window.location.href = "{% url 'pedidos_activos' %}";
-                    } else if (response.error) {
-                        alert('Error al crear el pedido: ' + response.error);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    alert('Hubo un error al procesar el pedido. Por favor, intenta nuevamente.');
-                }
-            });
-        });
-    });
+    };
 </script>
 {% endblock %}
-
