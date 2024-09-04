@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.text())
         .then(html => {
             document.getElementById('platosContainer').innerHTML = html;
-            addEventListenersToPlatos();
+            addEventListenersToPlatos(); // Volvemos a asignar los eventos
         });
     });
 
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
             button.addEventListener('click', function(e) {
                 e.preventDefault();
                 const platoId = this.getAttribute('data-id');
-                const platoPrecio = parseFloat(this.getAttribute('data-precio'));  // Parsear el precio correctamente
+                const platoPrecio = parseFloat(this.getAttribute('data-precio')); // Parsear el precio correctamente
                 const platoNombre = this.closest('.card').querySelector('.card-title').innerText;
 
                 // Verificar si el plato ya existe en el pedido
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    
+
     // Añadir controladores de eventos a los platos al cargar la página
     addEventListenersToPlatos();
 
@@ -73,10 +73,10 @@ document.addEventListener('DOMContentLoaded', function() {
         pedido.forEach(plato => {
             const li = document.createElement('li');
             li.innerHTML = `
-                ${plato.nombre} - 
-                <button class="btn-restar">-</button> 
+                ${plato.nombre} 
+                <button class="btn-cantidad btn-restar">➖</button> 
                 ${plato.cantidad} unidades 
-                <button class="btn-sumar">+</button> - 
+                <button class="btn-cantidad btn-sumar">➕</button> 
                 $${(plato.precio_unitario * plato.cantidad).toFixed(2)}
             `;
             resumenPedido.appendChild(li);
@@ -91,6 +91,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (plato.cantidad > 1) {
                     plato.cantidad -= 1;
                     renderPedido();
+                } else {
+                    // Si la cantidad es 1 y el usuario hace clic en restar, eliminamos el plato del pedido
+                    pedido = pedido.filter(p => p.plato_id !== plato.plato_id);
+                    renderPedido();
+                    alert(`Se sacó el plato ${plato.nombre} del pedido.`);
                 }
             });
         });

@@ -24,21 +24,20 @@
             <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
             {% endfor %}
         </select>
-
-
         <div id="platosContainer" class="row row-cols-1 row-cols-md-3 g-4">
             {% for plato in platos %}
             <div class="col">
-                <div class="card h-100">
-                    {% if plato.imagen %}
-                    <img src="{{ plato.imagen.url }}" class="card-img-top img-fluid" alt="{{ plato.nombre_plato }}">
-                    {% else %}
-                    <img src="{% static 'images/default_image.png' %}" class="card-img-top img-fluid" alt="Imagen no disponible">
-                    {% endif %}
-                    <div class="card-body">
-                        <h5 class="card-title">{{ plato.nombre_plato }}</h5>
-                        <p class="card-text">${{ plato.precio }}</p>
-                        <button class="btn btn-primary agregar-pedido" data-id="{{ plato.id }}" data-precio="{{ plato.precio }}">Agregar al Pedido</button>
+                    <div class="card h-100">
+                        {% if plato.imagen and plato.imagen.url %}
+                            <img src="{{ plato.imagen.url }}" class="card-img-top img-fluid" alt="{{ plato.nombre_plato }}">
+                        {% else %}
+                            <img src="{% static 'img/default_plato.jpg' %}" class="card-img-top img-fluid" alt="Imagen no disponible">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ plato.nombre_plato }}</h5>
+                            <p class="card-text">${{ plato.precio }}</p>
+                            <button class="btn btn-primary agregar-pedido" data-id="{{ plato.id }}" data-precio="{{ plato.precio }}">Agregar al Pedido</button>
+                        
                     </div>
                 </div>
             </div>
@@ -53,7 +52,7 @@
 
 
 <style>
-   
+    
     body {
         font-family: Arial, sans-serif;
         background-color: #f8f9fa;
@@ -149,7 +148,46 @@
         border: none;
     }
 
-    /* Responsive Styles */
+    
+    #resumenPedido li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        margin-bottom: 5px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    
+    .cantidad-control {
+        display: flex;
+        align-items: center;
+    }
+
+    .btn-cantidad {
+        padding: 5px 10px;
+        font-size: 1.2rem;
+        font-weight: bold;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        border-radius: 4px;
+        margin: 0 5px;
+        cursor: pointer;
+    }
+
+    .btn-cantidad:hover {
+        background-color: #0056b3;
+    }
+
+    .cantidad-text {
+        margin: 0 10px;
+        font-size: 1.2rem;
+    }
+
+    
     @media (max-width: 768px) {
         .card {
             width: 100%;
