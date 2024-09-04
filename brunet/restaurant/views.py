@@ -48,47 +48,80 @@ from .models import Pedido, DetallePedido
 DetallePedidoFormSet = inlineformset_factory(Pedido, DetallePedido, form=DetallePedidoForm, extra=1)
 
 
+
 from django.http import JsonResponse
-from .models import Categoria  # Importa el modelo de Categoría
+from django.shortcuts import get_object_or_404, render
+from django.contrib.auth.decorators import login_required
+import json
+from .models import Pedido, DetallePedido, Mesa, Menu, Categoria
 
 @login_required
 def crear_pedido(request, mesa_id):
     mesa = get_object_or_404(Mesa, id=mesa_id)
-    PedidoFormSet = inlineformset_factory(Pedido, DetallePedido, form=DetallePedidoForm, extra=1)
-    categorias = Categoria.objects.all()  # Obtén todas las categorías
+    categorias = Categoria.objects.all()
 
     if request.method == 'POST':
-        pedido_form = PedidoForm(request.POST)
-        formset = PedidoFormSet(request.POST)
+        try:
+            # Cargar los datos del pedido enviados vía AJAX
+            pedido_data = json.loads(request.POST.get('pedido', '[]'))
 
-        if pedido_form.is_valid() and formset.is_valid():
-            pedido = pedido_form.save(commit=False)
-            pedido.usuario = request.user
-            pedido.mesa = mesa
-            pedido.total = 0
+            # Verificar si se ha seleccionado al menos un plato
+            if len(pedido_data) == 0:
+                return JsonResponse({'success': False, 'error': 'No se seleccionaron platos para el pedido.'})
 
+            # Crear el nuevo pedido
+            pedido = Pedido.objects.create(
+                usuario=request.user,
+                mesa=mesa,
+                estado='preparando',
+                total=0.00  # Inicialmente 0, luego lo calculamos
+            )
+
+            total_pedido = 0  # Inicia el total del pedido
+
+            # Guardar los detalles del pedido
+            for item in pedido_data:
+                plato = get_object_or_404(Menu, id=item['plato_id'])
+                cantidad = int(item['cantidad'])
+
+                # Verificar que la cantidad sea válida
+                if cantidad <= 0:
+                    return JsonResponse({'success': False, 'error': f'Cantidad inválida para el plato {plato.nombre_plato}.'})
+
+                precio_unitario = plato.precio
+                subtotal = precio_unitario * cantidad
+
+                # Crear el detalle del pedido
+                DetallePedido.objects.create(
+                    pedido=pedido,
+                    menu=plato,
+                    cantidad=cantidad,
+                    precio_unitario=precio_unitario,
+                    subtotal=subtotal
+                )
+
+                total_pedido += subtotal  # Sumar al total
+
+            # Actualizar el total del pedido
+            pedido.total = total_pedido
             pedido.save()
 
-            detalles = formset.save(commit=False)
-            for detalle in detalles:
-                detalle.pedido = pedido
-                detalle.save()
-
-            pedido.total = sum(detalle.subtotal for detalle in pedido.detalles.all())
-            pedido.save()
-
+            # Respuesta de éxito
             return JsonResponse({'success': True})
 
-    else:
-        pedido_form = PedidoForm()
-        formset = PedidoFormSet()
+        except Exception as e:
+            # En caso de error, devolver un mensaje detallado
+            return JsonResponse({'success': False, 'error': str(e)})
 
-    return render(request, 'pedido/crear_pedido.html', {
-        'pedido_form': pedido_form,
-        'formset': formset,
-        'mesa': mesa,
-        'categorias': categorias,  # Pasamos las categorías al contexto
-    })
+    else:
+        # Mostrar la plantilla para crear pedido
+        return render(request, 'pedido/crear_pedido.html', {
+            'mesa': mesa,
+            'categorias': categorias,
+        })
+
+
+
 
 
 @login_required
@@ -808,9 +841,22 @@ def filtrar_platos_por_categoria(request):
     categoria_id = request.GET.get('categoria_id')
     if categoria_id:
         platos = Menu.objects.filter(categoria_id=categoria_id, disponible=True)
-        opciones = ''.join([f'<option value="{plato.id}">{plato.nombre_plato}</option>' for plato in platos])
-        return HttpResponse(opciones)
-    return HttpResponse('<option value="">No hay platos disponibles</option>')
+        html = ''
+        for plato in platos:
+            html += f'''
+            <div class="card" style="width: 18rem;">
+                <img src="{plato.imagen.url}" class="card-img-top" alt="{plato.nombre_plato}">
+                <div class="card-body">
+                    <h5 class="card-title">{plato.nombre_plato}</h5>
+                    <p class="card-text">{plato.descripcion}</p>
+                    <p class="card-text"><strong>${plato.precio}</strong></p>
+                    <button class="btn btn-primary agregar-plato" data-id="{plato.id}" data-nombre="{plato.nombre_plato}" data-precio="{plato.precio}" data-imagen="{plato.imagen.url}">Agregar al Pedido</button>
+                </div>
+            </div>
+            '''
+        return HttpResponse(html)
+    return HttpResponse('<p>No hay platos disponibles</p>')
+
 
 
 #fin menu.

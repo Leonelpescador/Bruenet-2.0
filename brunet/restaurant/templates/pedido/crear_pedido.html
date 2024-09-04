@@ -5,7 +5,7 @@
     <h1 class="text-center">Crear Pedido para la Mesa {{ mesa.numero_mesa }}</h1>
 
     <div class="form-container" style="max-width: 800px; margin: 0 auto;">
-        <form id="pedidoForm" method="post">
+        <form id="pedidoForm" method="post" action="{% url 'crear_pedido' mesa.id %}">
             {% csrf_token %}
             <div class="form-group mb-3">
                 <label for="mesa">Mesa</label>
@@ -21,136 +21,137 @@
             </div>
 
             <h3 class="text-center mt-4">Seleccionar Platos:</h3>
-            {{ formset.management_form }}
-
-            <div id="formset-container">
-                {% for form in formset %}
-                <div class="detalle-pedido mb-3 p-3 bg-white rounded shadow-sm">
-                    <div class="form-group mb-3">
-                        <label for="categoria-{{ forloop.counter0 }}">Filtrar por Categoría:</label>
-                        <select id="categoria-{{ forloop.counter0 }}" class="form-control categoria-select">
-                            <option value="">Selecciona una Categoría</option>
-                            {% for categoria in categorias %}
-                                <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group mb-2">
-                        <label for="id_menu-{{ forloop.counter0 }}">Seleccione su menú:</label>
-                        {{ form.menu }}
-                    </div>
-                    <div class="form-group mb-2">
-                        {{ form.cantidad.label_tag }} 
-                        {{ form.cantidad }}
-                    </div>
-                    <div class="form-group mb-2">
-                        {{ form.precio_unitario.label_tag }} 
-                        {{ form.precio_unitario }}
-                    </div>
-                </div>
-                {% endfor %}
+            <div class="form-group mb-3">
+                <label for="categoria">Filtrar por Categoría:</label>
+                <select id="categoria" class="form-control categoria-select">
+                    <option value="">Selecciona una Categoría</option>
+                    {% for categoria in categorias %}
+                        <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
+                    {% endfor %}
+                </select>
             </div>
 
-            <div class="text-center">
+            <div id="platos-container" class="row">
+                <!-- Aquí se mostrarán los platos filtrados por categoría -->
+            </div>
+
+            <h3 class="text-center mt-4">Pedido Seleccionado:</h3>
+            <div id="pedido-seleccionado" class="mb-4">
+                <!-- Aquí se agregarán los platos seleccionados con checkbox -->
+            </div>
+
+            <div class="text-center mt-3">
                 <button type="submit" class="btn btn-primary">Crear Pedido</button>
                 <a href="{% url 'home' %}" class="btn btn-secondary">Cancelar</a>
             </div>
         </form>
     </div>
 </div>
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="text/javascript">
     $(document).ready(function() {
-        var formsetContainer = $('#formset-container');
-        var totalForms = $('#id_form-TOTAL_FORMS');
+        var platosContainer = $('#platos-container');
+        var pedidoSeleccionado = $('#pedido-seleccionado');
 
-        function initializeCategoryFilter() {
-            $('.categoria-select').off('change').on('change', function() {
-                var categoriaId = $(this).val();
-                var $menuSelect = $(this).closest('.detalle-pedido').find('select[id$="-menu"]');
-                
-                $.ajax({
-                    url: "{% url 'filtrar_platos_por_categoria' %}",
-                    data: {
-                        'categoria_id': categoriaId
-                    },
-                    success: function(data) {
-                        $menuSelect.html(data);
-                    }
-                });
-            });
-        }
+        // Filtrar platos por categoría
+        $('.categoria-select').on('change', function() {
+            var categoriaId = $(this).val();
 
-        function initializeMenuChange() {
-            formsetContainer.find('select[id$="-menu"]').off('change').on('change', function() {
-                var platoId = $(this).val();
-                var precioField = $(this).closest('.detalle-pedido').find('input[id$="-precio_unitario"]');
-
-                if (platoId) {
-                    $.ajax({
-                        url: "{% url 'obtener_precio_plato' %}",
-                        data: {
-                            'menu_id': platoId
-                        },
-                        success: function(data) {
-                            if (data.precio) {
-                                precioField.val(data.precio);
-                            }
-                        }
-                    });
-                } else {
-                    precioField.val('');
+            $.ajax({
+                url: "{% url 'filtrar_platos_por_categoria' %}",
+                data: {
+                    'categoria_id': categoriaId
+                },
+                success: function(data) {
+                    platosContainer.html(data);  // Cargar las tarjetas de platos en el contenedor
                 }
             });
-        }
-
-        initializeCategoryFilter();
-        initializeMenuChange();
-
-        $('#add-form-btn').click(function() {
-            var formCount = parseInt(totalForms.val());
-            var newForm = formsetContainer.children().last().clone(false);
-            var regex = new RegExp('form-' + (formCount - 1), 'g');
-
-            newForm.html(newForm.html().replace(regex, 'form-' + formCount));
-            newForm.find('input, select').val('');
-            newForm.find('.categoria-select').attr('id', 'categoria-' + formCount);
-
-            formsetContainer.append(newForm);
-            totalForms.val(formCount + 1);
-
-            initializeCategoryFilter();
-            initializeMenuChange();
         });
 
-        formsetContainer.on('click', '.remove-form-btn', function() {
-            if (formsetContainer.children().length > 1) {
-                $(this).closest('.detalle-pedido').remove();
-                totalForms.val(parseInt(totalForms.val()) - 1);
+        // Función para agregar platos al pedido con un checkbox
+        $(document).on('change', '.checkbox-plato', function() {
+            var platoId = $(this).data('id');
+            var nombrePlato = $(this).data('nombre');
+            var precioPlato = $(this).data('precio');
+            var imagenPlato = $(this).data('imagen');
+            var cantidad = 1; // Iniciar la cantidad en 1
+
+            if ($(this).is(':checked')) {
+                // Crear el HTML para agregar el plato seleccionado al pedido
+                var pedidoHtml = `
+                    <div class="pedido-item mb-3" data-id="${platoId}">
+                        <div class="d-flex justify-content-between">
+                            <img src="${imagenPlato}" alt="${nombrePlato}" style="width: 50px; height: 50px;">
+                            <div class="pedido-nombre">${nombrePlato}</div>
+                            <div class="pedido-precio">${precioPlato}</div>
+                            <div class="pedido-cantidad">
+                                <button class="btn btn-sm btn-danger decremento">-</button>
+                                <input type="text" value="${cantidad}" readonly style="width: 30px; text-align: center;">
+                                <button class="btn btn-sm btn-success incremento">+</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                pedidoSeleccionado.append(pedidoHtml);
             } else {
-                alert("No puedes eliminar este formulario hasta que agregues otro plato.");
+                // Eliminar el plato de la lista si se desmarca
+                pedidoSeleccionado.find(`div[data-id="${platoId}"]`).remove();
             }
         });
 
+        // Incrementar la cantidad
+        $(document).on('click', '.incremento', function() {
+            var input = $(this).siblings('input');
+            var currentVal = parseInt(input.val());
+            input.val(currentVal + 1);
+        });
+
+        // Decrementar la cantidad
+        $(document).on('click', '.decremento', function() {
+            var input = $(this).siblings('input');
+            var currentVal = parseInt(input.val());
+            if (currentVal > 1) {
+                input.val(currentVal - 1);
+            }
+        });
+
+        // Enviar el pedido al servidor solo cuando el usuario haga clic en "Crear Pedido"
         $('#pedidoForm').submit(function(event) {
             event.preventDefault(); // Prevenir el envío tradicional del formulario
-            
+
+            var pedidoData = [];
+            $('#pedido-seleccionado').find('.pedido-item').each(function() {
+                var platoId = $(this).data('id');
+                var cantidad = $(this).find('input').val();
+                pedidoData.push({ plato_id: platoId, cantidad: cantidad });
+            });
+
+            if (pedidoData.length === 0) {
+                alert("No has seleccionado ningún plato.");
+                return;
+            }
+
+            // Enviar el pedido solo cuando se haga clic en "Crear Pedido"
             $.ajax({
                 url: "{% url 'crear_pedido' mesa.id %}",
                 type: "POST",
-                data: $(this).serialize(),
+                data: {
+                    csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val(),
+                    pedido: JSON.stringify(pedidoData)  // Enviar la lista de platos seleccionados
+                },
                 success: function(response) {
                     if (response.success) {
-                        if (confirm("¿Quieres agregar otro pedido?")) {
-                            location.reload();
-                        } else {
-                            window.location.href = "{% url 'pedidos_activos' %}";
-                        }
+                        alert('Pedido creado con éxito.');
+                        window.location.href = "{% url 'pedidos_activos' %}";
+                    } else if (response.error) {
+                        alert('Error al crear el pedido: ' + response.error);
                     }
+                },
+                error: function(xhr, status, error) {
+                    alert('Hubo un error al procesar el pedido. Por favor, intenta nuevamente.');
                 }
             });
         });
     });
 </script>
 {% endblock %}
+
