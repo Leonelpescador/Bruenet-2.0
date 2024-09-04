@@ -49,77 +49,38 @@ DetallePedidoFormSet = inlineformset_factory(Pedido, DetallePedido, form=Detalle
 
 
 
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import login_required
+from .models import Pedido, DetallePedido, Mesa, Menu
 import json
-from .models import Pedido, DetallePedido, Mesa, Menu, Categoria
 
-@login_required
 def crear_pedido(request, mesa_id):
     mesa = get_object_or_404(Mesa, id=mesa_id)
-    categorias = Categoria.objects.all()
+    categorias = Categoria.objects.all()  # Filtrar por categorías
+    platos = Menu.objects.filter(disponible=True)  # Todos los platos disponibles
 
     if request.method == 'POST':
-        try:
-            # Cargar los datos del pedido enviados vía AJAX
-            pedido_data = json.loads(request.POST.get('pedido', '[]'))
+        # Procesar el pedido enviado por el usuario
+        pedido_data = json.loads(request.body.decode('utf-8'))
+        pedido = Pedido.objects.create(mesa=mesa, usuario=request.user, estado='preparando', total=0)
+        
+        # Agregar detalles del pedido
+        for detalle in pedido_data['platos']:
+            plato = get_object_or_404(Menu, id=detalle['plato_id'])
+            cantidad = detalle['cantidad']
+            DetallePedido.objects.create(pedido=pedido, menu=plato, cantidad=cantidad, precio_unitario=plato.precio, subtotal=plato.precio * cantidad)
+        
+        # Calcular el total
+        pedido.total = sum(d.subtotal for d in pedido.detalles.all())
+        pedido.save()
+        return JsonResponse({'success': True})
 
-            # Verificar si se ha seleccionado al menos un plato
-            if len(pedido_data) == 0:
-                return JsonResponse({'success': False, 'error': 'No se seleccionaron platos para el pedido.'})
-
-            # Crear el nuevo pedido
-            pedido = Pedido.objects.create(
-                usuario=request.user,
-                mesa=mesa,
-                estado='preparando',
-                total=0.00  # Inicialmente 0, luego lo calculamos
-            )
-
-            total_pedido = 0  # Inicia el total del pedido
-
-            # Guardar los detalles del pedido
-            for item in pedido_data:
-                plato = get_object_or_404(Menu, id=item['plato_id'])
-                cantidad = int(item['cantidad'])
-
-                # Verificar que la cantidad sea válida
-                if cantidad <= 0:
-                    return JsonResponse({'success': False, 'error': f'Cantidad inválida para el plato {plato.nombre_plato}.'})
-
-                precio_unitario = plato.precio
-                subtotal = precio_unitario * cantidad
-
-                # Crear el detalle del pedido
-                DetallePedido.objects.create(
-                    pedido=pedido,
-                    menu=plato,
-                    cantidad=cantidad,
-                    precio_unitario=precio_unitario,
-                    subtotal=subtotal
-                )
-
-                total_pedido += subtotal  # Sumar al total
-
-            # Actualizar el total del pedido
-            pedido.total = total_pedido
-            pedido.save()
-
-            # Respuesta de éxito
-            return JsonResponse({'success': True})
-
-        except Exception as e:
-            # En caso de error, devolver un mensaje detallado
-            return JsonResponse({'success': False, 'error': str(e)})
-
-    else:
-        # Mostrar la plantilla para crear pedido
-        return render(request, 'pedido/crear_pedido.html', {
-            'mesa': mesa,
-            'categorias': categorias,
-        })
-
+    return render(request, 'pedido/crear_pedido.html', {
+        'mesa': mesa,
+        'categorias': categorias,
+        'platos': platos,
+    })
 
 
 
