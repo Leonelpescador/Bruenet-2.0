@@ -3,37 +3,52 @@ document.addEventListener('DOMContentLoaded', function() {
     const categoriaFiltro = document.getElementById('categoriaFiltro');
     let pedido = [];
 
-    // Evento para agregar platos al pedido
-    document.querySelectorAll('.agregar-pedido').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const platoId = this.getAttribute('data-id');
-            const platoPrecio = this.getAttribute('data-precio');
-            const platoNombre = this.closest('.card').querySelector('.card-title').innerText;
-
-            // Verificar si el plato ya existe en el pedido
-            const itemExistente = pedido.find(p => p.plato_id == platoId);
-            if (itemExistente) {
-                itemExistente.cantidad += 1;
-            } else {
-                pedido.push({ plato_id: platoId, nombre: platoNombre, cantidad: 1, precio_unitario: platoPrecio });
-            }
-
-            renderPedido();
+    // Filtrar platos por categoría
+    categoriaFiltro.addEventListener('change', function() {
+        const categoriaId = this.value;
+        fetch(`/filtrar_platos_por_categoria/?categoria_id=${categoriaId}`)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('platosContainer').innerHTML = html;
+            addEventListenersToPlatos();
         });
     });
+
+    // Añadir evento a los botones de "Agregar al Pedido"
+    function addEventListenersToPlatos() {
+        document.querySelectorAll('.agregar-pedido').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const platoId = this.getAttribute('data-id');
+                const platoPrecio = parseFloat(this.getAttribute('data-precio'));  // Parsear el precio correctamente
+                const platoNombre = this.closest('.card').querySelector('.card-title').innerText;
+
+                // Verificar si el plato ya existe en el pedido
+                const itemExistente = pedido.find(p => p.plato_id == platoId);
+                if (itemExistente) {
+                    itemExistente.cantidad += 1;
+                } else {
+                    pedido.push({ plato_id: platoId, nombre: platoNombre, cantidad: 1, precio_unitario: platoPrecio });
+                }
+
+                renderPedido();
+            });
+        });
+    }
+    
+    // Añadir controladores de eventos a los platos al cargar la página
+    addEventListenersToPlatos();
 
     // Manejo del envío del formulario
     document.getElementById('pedidoForm').addEventListener('submit', function(e) {
         e.preventDefault();  // Evitar el envío normal del formulario
-        
-        // Verifica si hay platos en el pedido
+
         if (pedido.length === 0) {
             alert("Por favor, agrega al menos un plato al pedido.");
             return;
         }
 
-        // Enviar los datos del pedido al servidor usando fetch
+        // Enviar los datos del pedido al servidor
         fetch(window.location.href, {
             method: 'POST',
             headers: {
@@ -52,17 +67,36 @@ document.addEventListener('DOMContentLoaded', function() {
           }).catch(error => console.error('Error:', error));
     });
 
-    // Función para mostrar el resumen del pedido
+    // Función para mostrar el resumen del pedido y ajustar cantidades
     function renderPedido() {
         resumenPedido.innerHTML = '';
         pedido.forEach(plato => {
             const li = document.createElement('li');
-            li.innerText = `${plato.nombre} - ${plato.cantidad} unidades - $${plato.precio_unitario * plato.cantidad}`;
+            li.innerHTML = `
+                ${plato.nombre} - 
+                <button class="btn-restar">-</button> 
+                ${plato.cantidad} unidades 
+                <button class="btn-sumar">+</button> - 
+                $${(plato.precio_unitario * plato.cantidad).toFixed(2)}
+            `;
             resumenPedido.appendChild(li);
+
+            // Botones para sumar y restar
+            li.querySelector('.btn-sumar').addEventListener('click', () => {
+                plato.cantidad += 1;
+                renderPedido();
+            });
+
+            li.querySelector('.btn-restar').addEventListener('click', () => {
+                if (plato.cantidad > 1) {
+                    plato.cantidad -= 1;
+                    renderPedido();
+                }
+            });
         });
     }
 
-    // Función para obtener el CSRF token
+    // Obtener el CSRF token
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {

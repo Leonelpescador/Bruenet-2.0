@@ -800,23 +800,21 @@ from .models import Menu
 
 def filtrar_platos_por_categoria(request):
     categoria_id = request.GET.get('categoria_id')
-    if categoria_id:
-        platos = Menu.objects.filter(categoria_id=categoria_id, disponible=True)
-        html = ''
-        for plato in platos:
-            html += f'''
-            <div class="card" style="width: 18rem;">
-                <img src="{plato.imagen.url}" class="card-img-top" alt="{plato.nombre_plato}">
-                <div class="card-body">
-                    <h5 class="card-title">{plato.nombre_plato}</h5>
-                    <p class="card-text">{plato.descripcion}</p>
-                    <p class="card-text"><strong>${plato.precio}</strong></p>
-                    <button class="btn btn-primary agregar-plato" data-id="{plato.id}" data-nombre="{plato.nombre_plato}" data-precio="{plato.precio}" data-imagen="{plato.imagen.url}">Agregar al Pedido</button>
-                </div>
+    platos = Menu.objects.filter(categoria_id=categoria_id, disponible=True) if categoria_id != '0' else Menu.objects.filter(disponible=True)
+    html = ''
+    for plato in platos:
+        html += f'''
+        <div class="card" style="width: 18rem; margin-right: 10px;">
+            <img src="{plato.imagen.url}" class="card-img-top" alt="{plato.nombre_plato}">
+            <div class="card-body">
+                <h5 class="card-title">{plato.nombre_plato}</h5>
+                <p class="card-text">${plato.precio}</p>
+                <button class="btn btn-primary agregar-pedido" data-id="{plato.id}" data-precio="{plato.precio}">Agregar al Pedido</button>
             </div>
-            '''
-        return HttpResponse(html)
-    return HttpResponse('<p>No hay platos disponibles</p>')
+        </div>
+        '''
+    return HttpResponse(html)
+
 
 
 
