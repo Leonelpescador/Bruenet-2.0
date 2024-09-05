@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Pedidos de Mesas</h1>
+
+    {% if mesas %}
+        <div class="row">
+            {% for mesa in mesas %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">Mesa {{ mesa.numero_mesa }}</h5>
+
+                            {% if mesa.pedido_actual %}
+                                <h6 class="text-center">Pedido Actual</h6>
+                                <ul class="list-unstyled">
+                                    {% for detalle in mesa.pedido_actual.detalles.all %}
+                                        <li>{{ detalle.menu.nombre_plato }} - Cantidad: {{ detalle.cantidad }}</li>
+                                    {% endfor %}
+                                </ul>
+
+                                {% if mesa.pedido_actual.estado != 'servido' %}
+                                    <div class="text-center">
+                                        <a href="{% url 'marcar_servido' mesa.pedido_actual.id %}" class="btn btn-success">Marcar como Servido</a>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-success text-center">
+                                        Pedido ya servido
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-info text-center">
+                                    No hay pedidos para esta mesa.
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center">
+            No hay mesas con pedidos en este momento.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
