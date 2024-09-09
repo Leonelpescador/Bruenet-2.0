@@ -177,6 +177,9 @@ class Pago(models.Model):
     def save(self, *args, **kwargs):
         self.monto = self.pedido.total
         super().save(*args, **kwargs)
+        self.pedido.estado = 'pagado'
+        self.pedido.save()
+
 
 class Inventario(models.Model):
     UNIDAD_MEDIDA_CHOICES = [
