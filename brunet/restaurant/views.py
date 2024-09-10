@@ -589,24 +589,29 @@ def apertura_caja(request):
 def consulta_caja(request, caja_id):
     caja = get_object_or_404(Caja, id=caja_id)
     
-
+    # Obtener las transacciones de la caja
     transacciones = caja.transacciones.all()
 
-    pedidos_en_caja = Pedido.objects.filter(
-        fecha_pedido__gte=caja.apertura, 
-        fecha_pedido__lte=caja.cierre if caja.cierre else timezone.now()
-    )
+    # Calcular el monto total de ingresos
+    total_ingresos = transacciones.filter(tipo='ingreso').aggregate(Sum('monto'))['monto__sum'] or 0
     
+    # Calcular los totales por método de pago
+    total_efectivo = sum(t.monto for t in transacciones if t.pago and t.pago.metodo_pago == 'efectivo')
+    total_tarjeta = sum(t.monto for t in transacciones if t.pago and t.pago.metodo_pago == 'tarjeta')
+    total_transferencia = sum(t.monto for t in transacciones if t.pago and t.pago.metodo_pago == 'transferencia')
+
+    # Obtener los pagos asociados a los pedidos de la caja
+    pedidos_en_caja = Pedido.objects.filter(fecha_pedido__gte=caja.apertura, fecha_pedido__lte=caja.cierre if caja.cierre else timezone.now())
     pagos = Pago.objects.filter(pedido__in=pedidos_en_caja)
-    
-    # Calcular el monto total de ingresos en la caja
-    monto_total = transacciones.filter(tipo='ingreso').aggregate(Sum('monto'))['monto__sum'] or 0
 
     return render(request, 'caja/consulta_caja.html', {
         'caja': caja,
         'transacciones': transacciones,
-        'monto_total': monto_total,
-        'pagos': pagos
+        'total_ingresos': total_ingresos,
+        'pagos': pagos,
+        'total_efectivo': total_efectivo,
+        'total_tarjeta': total_tarjeta,
+        'total_transferencia': total_transferencia,
     })
 
 
@@ -1264,7 +1269,7 @@ def registrar_pago(request, pedido_id):
         transaccion.save()
 
         messages.success(request, 'Pago registrado con éxito.')
-        return redirect('consulta_caja', caja_id=caja_abierta.id)
+        return redirect('pedidos_activos')
 
     return render(request, 'caja/registrar_pago.html', {'pedido': pedido, 'caja': caja_abierta})
 
