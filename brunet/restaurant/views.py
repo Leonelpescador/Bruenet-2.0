@@ -684,8 +684,24 @@ from django.utils import timezone
 
 def descargar_reporte_caja(request, caja_id):
     caja = get_object_or_404(Caja, id=caja_id)
+    
+    # Calcular los totales por método de pago
+    transacciones = caja.transacciones.all()
+    total_efectivo = sum(t.monto for t in transacciones if t.pago.metodo_pago == 'efectivo')
+    total_tarjeta = sum(t.monto for t in transacciones if t.pago.metodo_pago == 'tarjeta')
+    total_transferencia = sum(t.monto for t in transacciones if t.pago.metodo_pago == 'transferencia')
+    total_final = sum(t.monto for t in transacciones)
+    
+    # Prepare the context
+    context = {
+        'caja': caja,
+        'total_efectivo': total_efectivo,
+        'total_tarjeta': total_tarjeta,
+        'total_transferencia': total_transferencia,
+        'total_final': total_final,
+    }
+
     template_path = 'caja/reporte_caja_pdf.html'
-    context = {'caja': caja}
     
     # Verificar si la caja tiene una fecha de cierre
     if caja.cierre:
