@@ -1,5 +1,5 @@
 from django import forms
-from .models import Caja, Pedido, Pago, Reserva, Compra, Mesa, Proveedor, Inventario, Categoria
+from .models import Caja, Pedido, Pago, Reserva, Compra, Mesa, Proveedor, Inventario, Categoria, DetalleCompra
 
 # Formulario para Apertura de Caja
 class AperturaCajaForm(forms.ModelForm):
@@ -86,6 +86,17 @@ class CompraForm(forms.ModelForm):
             'archivo_documentacion': forms.ClearableFileInput(attrs={'class': 'form-control'}),
             'detalle': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
         }
+        
+class DetalleCompraForm(forms.ModelForm):
+    class Meta:
+        model = DetalleCompra
+        fields = ['inventario', 'cantidad', 'precio_unitario']
+        widgets = {
+            'inventario': forms.Select(attrs={'class': 'form-control'}),
+            'cantidad': forms.NumberInput(attrs={'class': 'form-control'}),
+            'precio_unitario': forms.NumberInput(attrs={'class': 'form-control'}),
+        }    
+        
 
 # Formulario para Modificar Compra
 class ModificarCompraForm(forms.ModelForm):

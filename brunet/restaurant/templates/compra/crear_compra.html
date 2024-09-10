@@ -1,105 +1,73 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="form-container">
+<div class="container">
     <h1>Registrar Compra</h1>
-    <form method="post" enctype="multipart/form-data" id="compraForm">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         
+        <!-- Formulario de compra -->
         <div class="form-group">
-            {{ form.proveedor.label_tag }} 
+            <label for="id_proveedor">{{ form.proveedor.label }}</label>
             {{ form.proveedor }}
         </div>
-
         <div class="form-group">
-            {{ form.total.label_tag }} 
+            <label for="id_total">{{ form.total.label }}</label>
             {{ form.total }}
         </div>
-
         <div class="form-group">
-            <label>
-                {{ form.tiene_documentacion }}
-                {{ form.tiene_documentacion.label_tag }}
-            </label>
+            <label for="id_tiene_documentacion">{{ form.tiene_documentacion.label }}</label>
+            {{ form.tiene_documentacion }}
         </div>
-
-        <div id="archivo-field" style="display: none;" class="form-group">
-            {{ form.archivo_documentacion.label_tag }} 
+        <div class="form-group" id="archivo-documentacion" style="display:none;">
+            <label for="id_archivo_documentacion">{{ form.archivo_documentacion.label }}</label>
             {{ form.archivo_documentacion }}
         </div>
-
         <div class="form-group">
-            {{ form.detalle.label_tag }} 
+            <label for="id_detalle">{{ form.detalle.label }}</label>
             {{ form.detalle }}
         </div>
 
-        <button type="submit" class="btn btn-primary btn-block">Registrar Compra</button>
+        <h3>Detalles de la Compra</h3>
+        {{ detalle_formset.management_form }}
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Inventario</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unitario</th>
+                    <th>Eliminar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for form in detalle_formset %}
+                <tr>
+                    <td>{{ form.inventario }}</td>
+                    <td>{{ form.cantidad }}</td>
+                    <td>{{ form.precio_unitario }}</td>
+                    <td>{{ form.DELETE }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-primary">Registrar Compra</button>
     </form>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const checkbox = document.getElementById('id_tiene_documentacion');
-        const archivoField = document.getElementById('archivo-field');
-        
+        const archivoField = document.getElementById('archivo-documentacion');
+
         function toggleArchivoField() {
             archivoField.style.display = checkbox.checked ? 'block' : 'none';
         }
-        
+
         checkbox.addEventListener('change', toggleArchivoField);
-        toggleArchivoField();  
+        toggleArchivoField();
     });
 </script>
 
-<style>
-    .form-container {
-        max-width: 600px;
-        margin: 50px auto;
-        padding: 20px;
-        background-color: #fcfcfc;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    
-    h1 {
-        text-align: center;
-        color: #333;
-        font-size: 28px;
-        margin-bottom: 20px;
-    }
-    
-    .form-group {
-        margin-bottom: 15px;
-    }
-    
-    input[type="text"], input[type="number"], select, textarea, input[type="file"] {
-        width: 100%;
-        padding: 10px;
-        margin-top: 5px;
-        border-radius: 5px;
-        border: 1px solid #ddd;  
-        font-size: 16px;
-        transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-    
-    input:focus, select:focus, textarea:focus, input[type="file"]:focus {
-        border-color: #007bff;  
-        box-shadow: 0 0 8px rgba(0, 123, 255, 0.25); 
-    }
-
-    button {
-        padding: 12px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        width: 100%;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-        background-color: #0056b3;
-    }
-</style>
 {% endblock %}
