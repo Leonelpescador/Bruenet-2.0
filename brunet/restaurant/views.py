@@ -477,30 +477,25 @@ def eliminar_proveedor(request, pk):
 
 # Compras
 from django.shortcuts import render, redirect
-from .models import Compra
-from .forms import CompraForm
 
 def crear_compra(request):
     if request.method == 'POST':
         form = CompraForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            return redirect('compras')
+            return redirect('compras')  
     else:
-        form = CompraForm()
+        form = CompraForm()  
     
     return render(request, 'compra/crear_compra.html', {'form': form})
 
 def compras(request):
     compras = Compra.objects.all()
     for compra in compras:
-        # Determinamos si el archivo adjunto es un PDF
-        if compra.archivo_documentacion:
-            compra.es_pdf = compra.archivo_documentacion.url.lower().endswith('.pdf')
-        else:
-            compra.es_pdf = False
-    
+        compra.es_pdf = compra.archivo_documentacion and compra.archivo_documentacion.url.lower().endswith('.pdf')
+
     return render(request, 'compra/compras.html', {'compras': compras})
+
 
 @login_required
 def editar_compra(request, pk):
