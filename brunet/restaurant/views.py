@@ -96,22 +96,22 @@ def crear_pedido(request, mesa_id):
 
 @login_required
 def modificar_pedido(request, pedido_id):
-    
     pedido = get_object_or_404(Pedido, id=pedido_id)
     mesa = pedido.mesa  
-
-
     categorias = Categoria.objects.all()
     platos = Menu.objects.all()
 
     if request.method == 'POST':
-        if request.is_ajax():  #
-            data = request.POST
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':  # Verificar si es una solicitud AJAX
+            data = json.loads(request.body)
             nuevos_detalles = data.get('detalles', [])
+
+            # Actualizar o crear nuevos detalles
             for detalle in nuevos_detalles:
                 menu_id = detalle.get('menu_id')
                 cantidad = detalle.get('cantidad')
                 plato = Menu.objects.get(id=menu_id)
+
                 detalle_pedido, created = DetallePedido.objects.get_or_create(
                     pedido=pedido,
                     menu=plato,
@@ -120,8 +120,10 @@ def modificar_pedido(request, pedido_id):
                 if not created:
                     detalle_pedido.cantidad = cantidad
                     detalle_pedido.save()
+            ids_nuevos_detalles = [detalle['menu_id'] for detalle in nuevos_detalles]
+            pedido.detalles.exclude(menu_id__in=ids_nuevos_detalles).delete()
 
-            return JsonResponse({'success': True})
+            return JsonResponse({'success': True, 'message': 'Pedido actualizado exitosamente.'})
 
         form = ModificarPedidoForm(request.POST, instance=pedido)
         if form.is_valid():
@@ -613,22 +615,30 @@ def consulta_caja(request, caja_id):
 # Cierre de Caja
 @login_required
 def cierre_caja(request, caja_id):
-    caja = get_object_or_404(Caja, id=caja_id, usuario=request.user)  # Asegura que solo pueda cerrar su propia caja
+    caja = get_object_or_404(Caja, id=caja_id, usuario=request.user)  # Solo cerrar su propia caja
+
+    if caja.estado != 'abierta':  # Verificar que la caja esté abierta
+        messages.error(request, 'La caja ya ha sido cerrada.')
+        return redirect('cierre_caja', caja_id=caja.id)
 
     if request.method == 'POST':
         total_final = caja.calcular_total_final()
         caja.cerrar_caja(total_final)
         messages.success(request, f'Caja {caja.id} cerrada exitosamente con un total de {caja.total_final}.')
+        
+        # Después de cerrar, quedarse en la página de cierre para descargar el reporte
         total_ingresos = sum(transaccion.monto for transaccion in caja.transacciones.filter(tipo='ingreso'))
         return render(request, 'caja/cierre_caja.html', {
             'caja': caja,
             'total_final': total_final,
             'total_ingresos': total_ingresos,
+            'cierre_exitoso': True,  # Añadir un indicador de cierre exitoso
         })
 
+    # Calcular el total de ingresos de la caja
     total_final = caja.calcular_total_final()
     total_ingresos = sum(transaccion.monto for transaccion in caja.transacciones.filter(tipo='ingreso'))
-    
+
     return render(request, 'caja/cierre_caja.html', {
         'caja': caja,
         'total_final': total_final,
@@ -639,44 +649,9 @@ def cierre_caja(request, caja_id):
 
 
 
-@login_required
-def registrar_pago(request, pedido_id):
-    caja_abierta = Caja.objects.filter(estado='abierta', usuario=request.user).first()
-    if not caja_abierta:
-        return redirect('apertura_caja')
 
-    # Permitir registrar pago para pedidos en estado 'servido' o 'pendiente'
-    pedido = get_object_or_404(Pedido, id=pedido_id, estado__in=['servido', 'pendiente'])
 
-    # Verificar si el pedido está en proceso por otro usuario
-    if pedido.en_proceso and pedido.usuario_procesando != request.user:
-        messages.error(request, f"Este pedido está siendo procesado por {pedido.usuario_procesando.username}.")
-        return redirect('pedidos_activos')
-    
-    # Marcar el pedido como en proceso y asignar el usuario actual
-    pedido.marcar_en_proceso(request.user)
 
-    if request.method == 'POST':
-        metodo_pago = request.POST.get('metodo_pago')
-        pago = Pago(pedido=pedido, metodo_pago=metodo_pago, monto=pedido.total)
-        pago.save()
-        pedido.estado = 'pagado'
-        pedido.save()
-
-        transaccion = TransaccionCaja(
-            caja=caja_abierta,
-            tipo='ingreso',
-            monto=pago.monto,
-            descripcion=f'Pago de pedido {pedido.id}'
-        )
-        transaccion.save()
-
-        # Marcar el pedido como completado y liberar el proceso
-        pedido.marcar_completado()
-
-        return redirect('consulta_caja', caja_id=caja_abierta.id)
-    
-    return render(request, 'caja/registrar_pago.html', {'pedido': pedido, 'caja': caja_abierta})
 
 
 @login_required
@@ -1242,18 +1217,13 @@ def registrar_pago(request, pedido_id):
     caja_abierta = Caja.objects.filter(estado='abierta', usuario=request.user).first()
     if not caja_abierta:
         return redirect('apertura_caja')
-
-    # Obtener el pedido en estado 'servido' o 'pendiente'
     pedido = get_object_or_404(Pedido, id=pedido_id, estado__in=['servido', 'pendiente'])
-
     if request.method == 'POST':
         metodo_pago = request.POST.get('metodo_pago')
         monto_pagado = request.POST.get('monto_pagado')
-
-        # Validar si el campo monto_pagado tiene valor
         if metodo_pago == 'efectivo':
             try:
-                # Intentar convertir el monto a float
+                
                 monto_pagado = float(monto_pagado)
             except (ValueError, TypeError):
                 messages.error(request, 'El monto pagado no es válido. Por favor ingrese un número.')
@@ -1263,22 +1233,17 @@ def registrar_pago(request, pedido_id):
                 messages.error(request, 'El monto pagado no puede ser menor que el total del pedido.')
                 return redirect('registrar_pago', pedido_id=pedido.id)
         else:
-            monto_pagado = pedido.total  # Para otros métodos de pago, usamos el total del pedido
-
-        # Registrar el pago
+            monto_pagado = pedido.total  
         pago = Pago(pedido=pedido, metodo_pago=metodo_pago, monto=monto_pagado)
         pago.save()
-
-        # Actualizar estado del pedido
         pedido.estado = 'pagado'
         pedido.save()
-
-        # Registrar la transacción en la caja
         transaccion = TransaccionCaja(
             caja=caja_abierta,
             tipo='ingreso',
             monto=pago.monto,
-            descripcion=f'Pago de pedido {pedido.id}'
+            descripcion=f'Pago de pedido {pedido.id}',
+            pago=pago  
         )
         transaccion.save()
 
@@ -1286,4 +1251,6 @@ def registrar_pago(request, pedido_id):
         return redirect('consulta_caja', caja_id=caja_abierta.id)
 
     return render(request, 'caja/registrar_pago.html', {'pedido': pedido, 'caja': caja_abierta})
+
+
 
