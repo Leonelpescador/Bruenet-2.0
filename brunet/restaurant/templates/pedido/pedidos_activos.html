@@ -80,9 +80,12 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Manejar el clic en el botón "Marcar como Servido"
         document.querySelectorAll('.btn-marcar-servido').forEach(function(button) {
             button.addEventListener('click', function() {
                 const pedidoId = this.getAttribute('data-pedido-id');
+                
+                // Hacer la solicitud AJAX para marcar como servido
                 fetch(`/pedido/servido/${pedidoId}/`, {
                     method: 'POST',
                     headers: {
@@ -91,13 +94,17 @@
                 })
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data); // Verificar la respuesta del backend
                     if (data.success) {
                         const pedidoRow = document.getElementById(`pedido-${pedidoId}`);
                         if (pedidoRow) {
                             const estadoCell = pedidoRow.querySelector('td:nth-child(3) .badge');
+                            // Cambiar el estado visualmente a "Servido"
                             estadoCell.classList.remove('bg-warning', 'bg-primary');
                             estadoCell.classList.add('bg-success');
                             estadoCell.textContent = 'Servido';
+                            
+                            // Cambiar las acciones: eliminar y registrar pago
                             const accionesCell = pedidoRow.querySelector('td:nth-child(5)');
                             accionesCell.innerHTML = `
                                 <a href="/pedido/eliminar/${pedidoId}/" class="btn btn-danger mb-1">Eliminar</a>
@@ -105,18 +112,27 @@
                             `;
                         }
                     } else {
-                        alert(data.error);
+                        alert(data.error || 'Ocurrió un error al marcar como servido.');
                     }
                 })
                 .catch(error => console.error('Error:', error));
             });
         });
+    
+        // Eliminar pedidos pagados al cargar la página
         document.querySelectorAll('tr[id^="pedido-"]').forEach(function(row) {
             const estadoCell = row.querySelector('td:nth-child(3) .badge');
-            if (estadoCell && estadoCell.textContent.trim().toLowerCase() === 'pagado') {
+            const estadoTexto = estadoCell ? estadoCell.textContent.trim().toLowerCase() : '';
+            
+            console.log("Estado encontrado:", estadoTexto); // Verificar qué valor de estado se obtiene
+            
+            // Eliminar filas cuyo estado sea "Pagado"
+            if (estadoTexto === 'pagado') {
                 row.remove();
             }
         });
+    
+        // Obtener el token CSRF para solicitudes POST
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {

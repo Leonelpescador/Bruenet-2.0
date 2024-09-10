@@ -224,18 +224,39 @@ def obtener_precio_plato(request):
 # Creación de Pago
 @login_required
 def crear_pago(request, pedido_id):
+    # Obtener el pedido
     pedido = get_object_or_404(Pedido, id=pedido_id)
+
     if request.method == 'POST':
         form = PagoForm(request.POST)
         if form.is_valid():
+            # Crear el pago y asociarlo con el pedido
             pago = form.save(commit=False)
             pago.pedido = pedido
             pago.save()
-            messages.success(request, 'Pago realizado con éxito.')
-            return redirect('home')
+
+            # Imprimir el estado actual del pedido antes de cambiarlo
+            print(f"Estado actual del pedido {pedido.id}: {pedido.estado}")
+
+            # Actualizar el estado del pedido a 'pagado'
+            pedido.estado = 'pagado'
+            pedido.save()
+
+            # Imprimir el estado actualizado del pedido
+            print(f"Nuevo estado del pedido {pedido.id}: {pedido.estado}")
+
+            # Mostrar mensaje de éxito
+            messages.success(request, f'Pago para el pedido {pedido.id} registrado con éxito.')
+
+            # Redirigir a la página de pedidos activos
+            return redirect('pedidos_activos')
+
     else:
         form = PagoForm()
+
     return render(request, 'pago/crear_pago.html', {'form': form, 'pedido': pedido})
+
+
 
 # Modificación de Pago
 @login_required
@@ -1206,4 +1227,63 @@ def cocinero_dashboard(request):
     return render(request, 'cocina/cocineros.html', context)
 
 
+
+#Registrar pago.
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import Pedido, Pago, Caja, TransaccionCaja
+from .forms import PagoForm
+from django.utils import timezone
+
+@login_required
+def registrar_pago(request, pedido_id):
+    caja_abierta = Caja.objects.filter(estado='abierta', usuario=request.user).first()
+    if not caja_abierta:
+        return redirect('apertura_caja')
+
+    # Obtener el pedido en estado 'servido' o 'pendiente'
+    pedido = get_object_or_404(Pedido, id=pedido_id, estado__in=['servido', 'pendiente'])
+
+    if request.method == 'POST':
+        metodo_pago = request.POST.get('metodo_pago')
+        monto_pagado = request.POST.get('monto_pagado')
+
+        # Validar si el campo monto_pagado tiene valor
+        if metodo_pago == 'efectivo':
+            try:
+                # Intentar convertir el monto a float
+                monto_pagado = float(monto_pagado)
+            except (ValueError, TypeError):
+                messages.error(request, 'El monto pagado no es válido. Por favor ingrese un número.')
+                return redirect('registrar_pago', pedido_id=pedido.id)
+
+            if monto_pagado < pedido.total:
+                messages.error(request, 'El monto pagado no puede ser menor que el total del pedido.')
+                return redirect('registrar_pago', pedido_id=pedido.id)
+        else:
+            monto_pagado = pedido.total  # Para otros métodos de pago, usamos el total del pedido
+
+        # Registrar el pago
+        pago = Pago(pedido=pedido, metodo_pago=metodo_pago, monto=monto_pagado)
+        pago.save()
+
+        # Actualizar estado del pedido
+        pedido.estado = 'pagado'
+        pedido.save()
+
+        # Registrar la transacción en la caja
+        transaccion = TransaccionCaja(
+            caja=caja_abierta,
+            tipo='ingreso',
+            monto=pago.monto,
+            descripcion=f'Pago de pedido {pedido.id}'
+        )
+        transaccion.save()
+
+        messages.success(request, 'Pago registrado con éxito.')
+        return redirect('consulta_caja', caja_id=caja_abierta.id)
+
+    return render(request, 'caja/registrar_pago.html', {'pedido': pedido, 'caja': caja_abierta})
 

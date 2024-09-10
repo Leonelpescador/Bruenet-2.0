@@ -175,10 +175,31 @@ class Pago(models.Model):
     comprobante = models.FileField(upload_to='comprobantes/', blank=True, null=True)
 
     def save(self, *args, **kwargs):
+        
         self.monto = self.pedido.total
+        
+        
         super().save(*args, **kwargs)
-        self.pedido.estado = 'pagado'
-        self.pedido.save()
+        
+        
+        self.pedido.refresh_from_db()
+
+        
+        print(f"Estado actual del pedido: {self.pedido.estado}")  #
+        if self.pedido.estado == 'servido':
+            print(f"Pedido {self.pedido.id} está servido. Cambiando estado a pagado...")
+            
+            try:
+                self.pedido.estado = 'pagado'
+                self.pedido.save()  
+                print(f"Estado del pedido {self.pedido.id} ha sido actualizado a pagado.")
+            except Exception as e:
+                print(f"Error al actualizar el estado del pedido: {e}")
+        else:
+            print(f"Pedido {self.pedido.id} no está en estado 'servido'. Estado actual: {self.pedido.estado}")
+
+
+
 
 
 class Inventario(models.Model):
