@@ -97,7 +97,7 @@ urlpatterns =[
     path('mesa/editar/<int:pk>/', views.editar_mesa, name='editar_mesa'),
     
     #estadisticas
-    path('reportes/estadisticas/', views.generar_reporte_estadisticas, name='generar_reporte_estadisticas'),
+    path('reportes/generar/', views.generar_reporte, name='generar_reporte'),
     
     # Caja 
     path('caja/apertura/', views.apertura_caja, name='apertura_caja'),

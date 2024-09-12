@@ -236,3 +236,12 @@ class DetallePedidoForm(forms.ModelForm):
         
         
 
+#Estadisticas
+from .models import Usuario
+class ReporteFiltroForm(forms.Form):
+    fecha_inicio = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label='Desde')
+    fecha_fin = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), label='Hasta')
+    usuario = forms.ModelChoiceField(
+        queryset=Usuario.objects.filter(tipo_usuario__in=['admin', 'cajero']),
+        required=False, label="Filtrar por Usuario"
+    )

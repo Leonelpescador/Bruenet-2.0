@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="my-4">Generar Reporte</h1>
+    <form method="post" class="row g-3">
+        {% csrf_token %}
+        <div class="col-md-6">
+            <label for="id_fecha_inicio" class="form-label">Desde</label>
+            {{ form.fecha_inicio }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_fecha_fin" class="form-label">Hasta</label>
+            {{ form.fecha_fin }}
+        </div>
+        <div class="col-md-6">
+            <label for="id_usuario" class="form-label">Filtrar por Usuario (Opcional)</label>
+            {{ form.usuario }}
+        </div>
+        <div class="col-md-12 text-center my-3">
+            <button type="submit" class="btn btn-primary">Generar Reporte</button>
+        </div>
+    </form>
+
+    {% if reportes %}
+        <h2 class="my-4">Resultados del Reporte</h2>
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th># Caja</th>
+                        <th>Usuario</th>
+                        <th>Apertura</th>
+                        <th>Cierre</th>
+                        <th>Total Ingresos</th>
+                        <th>Total Egresos</th>
+                        <th>Pedidos Realizados</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reporte in reportes %}
+                    <tr>
+                        <td>{{ reporte.caja.id }}</td>
+                        <td>{{ reporte.caja.usuario.username }}</td>
+                        <td>{{ reporte.caja.apertura }}</td>
+                        <td>{{ reporte.caja.cierre|default:"En proceso" }}</td>
+                        <td>${{ reporte.total_ingresos }}</td>
+                        <td>${{ reporte.total_egresos }}</td>
+                        <td>
+                            <ul>
+                                {% for pedido in reporte.pedidos %}
+                                    <li>Pedido {{ pedido.id }} - ${{ pedido.total }} - {{ pedido.estado }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

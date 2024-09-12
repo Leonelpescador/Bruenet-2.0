@@ -1320,78 +1320,44 @@ def registrar_pago(request, pedido_id):
 #estadisticas
 
 from django.shortcuts import render
-from .models import Caja, Pedido, Pago, Usuario, Menu
-from django.db.models import Sum, Count, Avg
-from django.utils import timezone
-from datetime import timedelta
+from .forms import ReporteFiltroForm
+from .models import Caja, Pedido, TransaccionCaja, Usuario
+from django.db.models import Sum
 
-def generar_reporte_estadisticas(request):
-    # Filtrar usuarios que sean cajeros o administradores
-    usuarios = Usuario.objects.filter(tipo_usuario__in=['cajero', 'admin'])
-
-    # Variables para estadísticas generales del restaurante
-    ingresos_totales = 0
-    pedidos_totales = 0
-    egresos_totales = 0
-    platos_mas_vendidos = Menu.objects.annotate(total_vendido=Sum('detallepedido__cantidad')).order_by('-total_vendido')[:5]
-
+def generar_reporte(request):
+    form = ReporteFiltroForm(request.POST or None)
     reportes = []
     
-    # Recorrer los usuarios filtrados
-    for usuario in usuarios:
-        # Filtrar las cajas abiertas por el usuario
-        cajas = Caja.objects.filter(usuario=usuario)
-
+    if form.is_valid():
+        fecha_inicio = form.cleaned_data['fecha_inicio']
+        fecha_fin = form.cleaned_data['fecha_fin']
+        usuario = form.cleaned_data['usuario']
+        
+        # Filtro de cajas abiertas o cerradas
+        cajas = Caja.objects.filter(apertura__date__gte=fecha_inicio, apertura__date__lte=fecha_fin)
+        
+        if usuario:
+            cajas = cajas.filter(usuario=usuario)
+        
         for caja in cajas:
-            # Calcular los ingresos y egresos para cada caja
-            total_ingresos = caja.transacciones.filter(tipo='ingreso').aggregate(Sum('monto'))['monto__sum'] or 0
-            total_egresos = caja.transacciones.filter(tipo='egreso').aggregate(Sum('monto'))['monto__sum'] or 0
+            transacciones = caja.transacciones.all()
+            pedidos = Pedido.objects.filter(fecha_pedido__gte=caja.apertura, fecha_pedido__lte=caja.cierre or timezone.now())
 
-            # Calcular el saldo final
-            saldo_final = total_ingresos - total_egresos
-
-            # Obtener los pedidos relacionados con esta caja
-            pedidos = Pedido.objects.filter(caja=caja)
+            total_ingresos = transacciones.filter(tipo='ingreso').aggregate(total=Sum('monto'))['total'] or 0
+            total_egresos = transacciones.filter(tipo='egreso').aggregate(total=Sum('monto'))['total'] or 0
             
-            # Calcular el monto total de los pedidos
-            total_pedidos_monto = pedidos.aggregate(Sum('total'))['total__sum'] or 0
-
-            # Contar el número total de pedidos
-            total_pedidos = pedidos.count()
-
-            # Calcular promedio de ingresos por pedido
-            promedio_pedido = pedidos.aggregate(promedio=Avg('total'))['promedio'] or 0
-
-            # Sumar las estadísticas a las generales
-            ingresos_totales += total_ingresos
-            pedidos_totales += total_pedidos
-            egresos_totales += total_egresos
-
-            # Calcular duración de la caja abierta
-            duracion_caja = caja.cierre - caja.apertura if caja.cierre else timezone.now() - caja.apertura
-
-            # Almacenar los datos en el reporte
             reportes.append({
-                'usuario': usuario,
                 'caja': caja,
                 'total_ingresos': total_ingresos,
                 'total_egresos': total_egresos,
-                'saldo_final': saldo_final,
-                'total_pedidos': total_pedidos,
-                'total_pedidos_monto': total_pedidos_monto,
-                'promedio_pedido': promedio_pedido,
-                'duracion_caja': duracion_caja,
+                'pedidos': pedidos,
             })
+    
+    return render(request, 'reportes/generar_reporte.html', {
+        'form': form,
+        'reportes': reportes
+    })
 
-    context = {
-        'reportes': reportes,
-        'ingresos_totales': ingresos_totales,
-        'pedidos_totales': pedidos_totales,
-        'egresos_totales': egresos_totales,
-        'platos_mas_vendidos': platos_mas_vendidos,
-    }
-
-    return render(request, 'reportes/estadisticas.html', context)
 
 
 
