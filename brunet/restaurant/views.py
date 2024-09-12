@@ -1317,4 +1317,81 @@ def registrar_pago(request, pedido_id):
     return render(request, 'caja/registrar_pago.html', {'pedido': pedido, 'caja': caja_abierta})
 
 
+#estadisticas
+
+from django.shortcuts import render
+from .models import Caja, Pedido, Pago, Usuario, Menu
+from django.db.models import Sum, Count, Avg
+from django.utils import timezone
+from datetime import timedelta
+
+def generar_reporte_estadisticas(request):
+    # Filtrar usuarios que sean cajeros o administradores
+    usuarios = Usuario.objects.filter(tipo_usuario__in=['cajero', 'admin'])
+
+    # Variables para estadísticas generales del restaurante
+    ingresos_totales = 0
+    pedidos_totales = 0
+    egresos_totales = 0
+    platos_mas_vendidos = Menu.objects.annotate(total_vendido=Sum('detallepedido__cantidad')).order_by('-total_vendido')[:5]
+
+    reportes = []
+    
+    # Recorrer los usuarios filtrados
+    for usuario in usuarios:
+        # Filtrar las cajas abiertas por el usuario
+        cajas = Caja.objects.filter(usuario=usuario)
+
+        for caja in cajas:
+            # Calcular los ingresos y egresos para cada caja
+            total_ingresos = caja.transacciones.filter(tipo='ingreso').aggregate(Sum('monto'))['monto__sum'] or 0
+            total_egresos = caja.transacciones.filter(tipo='egreso').aggregate(Sum('monto'))['monto__sum'] or 0
+
+            # Calcular el saldo final
+            saldo_final = total_ingresos - total_egresos
+
+            # Obtener los pedidos relacionados con esta caja
+            pedidos = Pedido.objects.filter(caja=caja)
+            
+            # Calcular el monto total de los pedidos
+            total_pedidos_monto = pedidos.aggregate(Sum('total'))['total__sum'] or 0
+
+            # Contar el número total de pedidos
+            total_pedidos = pedidos.count()
+
+            # Calcular promedio de ingresos por pedido
+            promedio_pedido = pedidos.aggregate(promedio=Avg('total'))['promedio'] or 0
+
+            # Sumar las estadísticas a las generales
+            ingresos_totales += total_ingresos
+            pedidos_totales += total_pedidos
+            egresos_totales += total_egresos
+
+            # Calcular duración de la caja abierta
+            duracion_caja = caja.cierre - caja.apertura if caja.cierre else timezone.now() - caja.apertura
+
+            # Almacenar los datos en el reporte
+            reportes.append({
+                'usuario': usuario,
+                'caja': caja,
+                'total_ingresos': total_ingresos,
+                'total_egresos': total_egresos,
+                'saldo_final': saldo_final,
+                'total_pedidos': total_pedidos,
+                'total_pedidos_monto': total_pedidos_monto,
+                'promedio_pedido': promedio_pedido,
+                'duracion_caja': duracion_caja,
+            })
+
+    context = {
+        'reportes': reportes,
+        'ingresos_totales': ingresos_totales,
+        'pedidos_totales': pedidos_totales,
+        'egresos_totales': egresos_totales,
+        'platos_mas_vendidos': platos_mas_vendidos,
+    }
+
+    return render(request, 'reportes/estadisticas.html', context)
+
+
 
