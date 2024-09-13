@@ -1359,5 +1359,45 @@ def generar_reporte(request):
     })
 
 
+import plotly.express as px
+from django.http import JsonResponse
+from django.db.models import Sum
+from .models import TransaccionCaja
+
+def obtener_datos_grafico_ingresos(request):
+    # Obtener los ingresos por día
+    ingresos_por_dia = TransaccionCaja.objects.filter(tipo='ingreso').values('fecha').annotate(total_ingresos=Sum('monto'))
+
+    # Extraer los datos
+    fechas = [ingreso['fecha'].strftime('%Y-%m-%d') for ingreso in ingresos_por_dia]
+    total_ingresos = [ingreso['total_ingresos'] for ingreso in ingresos_por_dia]
+
+    # Crear gráfico con Plotly
+    fig = px.line(x=fechas, y=total_ingresos, labels={'x': 'Fecha', 'y': 'Ingresos'}, title='Ingresos Totales por Día')
+
+    # Convertir el gráfico a JSON
+    graph_json = fig.to_json()
+
+    return JsonResponse(graph_json, safe=False)
+
+def obtener_datos_grafico_metodos_pago(request):
+    # Obtener los totales por método de pago
+    metodos_pago_totales = TransaccionCaja.objects.filter(tipo='ingreso').exclude(pago__metodo_pago__isnull=True).values('pago__metodo_pago').annotate(total=Sum('monto'))
+
+
+    # Extraer los datos
+    metodos_pago = [metodo['pago__metodo_pago'] for metodo in metodos_pago_totales]
+    totales = [metodo['total'] for metodo in metodos_pago_totales]
+
+    # Crear gráfico con Plotly
+    fig = px.pie(values=totales, names=metodos_pago, title='Métodos de Pago')
+
+    # Convertir el gráfico a JSON
+    graph_json = fig.to_json()
+
+    return JsonResponse(graph_json, safe=False)
+
+
+
 
 

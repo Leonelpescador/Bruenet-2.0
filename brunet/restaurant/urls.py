@@ -98,6 +98,9 @@ urlpatterns =[
     
     #estadisticas
     path('reportes/generar/', views.generar_reporte, name='generar_reporte'),
+    path('reportes/grafico_ingresos/', views.obtener_datos_grafico_ingresos, name='obtener_datos_grafico_ingresos'),
+    path('reportes/grafico_metodos_pago/', views.obtener_datos_grafico_metodos_pago, name='obtener_datos_grafico_metodos_pago'),
+    
     
     # Caja 
     path('caja/apertura/', views.apertura_caja, name='apertura_caja'),
