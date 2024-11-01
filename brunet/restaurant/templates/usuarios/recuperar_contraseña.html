@@ -4,9 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión - BRUNET</title>
+    <title>Recuperar Contraseña - BRUNET</title>
 
-    <!-- Bootstrap CSS para modales -->
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Estilos personalizados -->
@@ -22,7 +22,7 @@
             justify-content: center;
             overflow: hidden;
         }
-    
+
         /* Video de fondo */
         .background-video {
             position: fixed;
@@ -33,8 +33,8 @@
             object-fit: cover;
             z-index: -1;
         }
-    
-        /* Contenedor del formulario de inicio de sesión */
+
+        /* Contenedor de recuperación de contraseña */
         .login-container {
             background: rgba(0, 0, 0, 0.8);
             padding: 40px;
@@ -45,7 +45,7 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
             z-index: 1;
         }
-    
+
         /* Estilo del logo */
         .login-container img.logo {
             width: 100px;
@@ -54,46 +54,43 @@
             margin-bottom: 20px;
             border: 2px solid #646464;
         }
-    
+
         /* Título y formulario */
         .login-container h2 {
             margin-bottom: 20px;
             font-size: 24px;
             font-weight: bold;
         }
-    
+
         .input-group {
             margin-bottom: 20px;
             text-align: left;
-            display: flex;
-            flex-direction: column;
         }
-    
+
         .input-group label {
             font-size: 14px;
             color: #cccccc;
-            margin-bottom: 5px;
         }
-    
+
         /* Inputs */
         .input-group input[type="text"],
+        .input-group input[type="email"],
         .input-group input[type="password"] {
             font-size: 16px;
             padding: 10px;
             width: 100%;
-            box-sizing: border-box;
             border-radius: 5px;
             border: 1px solid #ccc;
             background: rgba(255, 255, 255, 0.2);
             color: #ffffff;
         }
-    
+
         /* Botones */
         .button-group {
             display: flex;
             gap: 10px;
         }
-    
+
         .button-group button,
         .button-group .cancel-button {
             padding: 12px;
@@ -106,19 +103,19 @@
             width: 100%;
             transition: background-color 0.3s ease;
         }
-    
+
         .button-group button:hover {
             background-color: #ff9800;
         }
-    
+
         .button-group .cancel-button {
             background-color: #555555;
         }
-    
+
         .button-group .cancel-button:hover {
             background-color: #888888;
         }
-    
+
         /* Mensajes y alertas */
         .message-container {
             margin-bottom: 20px;
@@ -126,7 +123,6 @@
             text-align: center;
         }
     </style>
-    
 </head>
 <body>
     <!-- Video de fondo -->
@@ -135,10 +131,10 @@
         Tu navegador no soporta la reproducción de video.
     </video>
 
-    <!-- Contenedor del formulario de inicio de sesión -->
+    <!-- Contenedor de recuperación de contraseña -->
     <div class="login-container">
         <img src="{% static 'images/Brunet_logo.jpg' %}" alt="BRUNET" class="logo">
-        <h2>Iniciar Sesión</h2>
+        <h2>Recuperar Contraseña</h2>
 
         <!-- Mensajes de alerta -->
         {% if messages %}
@@ -151,27 +147,45 @@
             </div>
         {% endif %}
 
-        <!-- Formulario de inicio de sesión -->
-        <form method="post">
+        <!-- Formulario de recuperación de contraseña -->
+        <form method="post" action="{% url 'recuperar_contraseña' %}">
             {% csrf_token %}
-            <div class="input-group">
-                {{ form.as_p }}
-            </div>
-            <div class="button-group">
-                <button type="submit">Iniciar Sesión</button>
-                <a href="{% url 'cliente' %}" class="cancel-button">Cancelar</a>
-            </div>
+            
+            {% if not mostrar_nueva_contraseña %}
+                <!-- Campos de validación de usuario y correo electrónico -->
+                <div class="input-group">
+                    <label for="username" class="form-label">Nombre de Usuario</label>
+                    <input type="text" name="username" id="username" class="form-control" required>
+                </div>
+                <div class="input-group">
+                    <label for="email" class="form-label">Correo Electrónico</label>
+                    <input type="email" name="email" id="email" class="form-control" required>
+                </div>
+            {% endif %}
+
+            {% if mostrar_nueva_contraseña %}
+                <!-- Campos para nueva contraseña si la verificación es correcta -->
+                <div class="input-group">
+                    <label for="nueva_contraseña" class="form-label">Nueva Contraseña</label>
+                    <input type="password" name="nueva_contraseña" id="nueva_contraseña" class="form-control" required>
+                </div>
+                <div class="input-group">
+                    <label for="confirmar_contraseña" class="form-label">Confirmar Contraseña</label>
+                    <input type="password" name="confirmar_contraseña" id="confirmar_contraseña" class="form-control" required>
+                </div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary w-100">
+                {% if mostrar_nueva_contraseña %}Restablecer Contraseña{% else %}Validar Información{% endif %}
+            </button>
         </form>
 
-        <!-- Botones para abrir modales de registro y recuperación de contraseña -->
-        <div class="button-group mt-3">
-            <a href="{% url 'registrar_usuario' %}" class="btn btn-link">Registrar Usuario</a>
-            <a href="{% url 'recuperar_contraseña' %}"  class="btn btn-link">Recuperar Contraseña</a>
+        <div class="mt-3 text-center">
+            <a href="{% url 'login' %}" class="btn btn-link">Volver al inicio de sesión</a>
         </div>
     </div>
 
-
-    <!-- Bootstrap JS para manejar modales -->
+    <!-- Bootstrap JS para manejo de modales -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

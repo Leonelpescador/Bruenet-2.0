@@ -134,5 +134,7 @@ urlpatterns =[
     path('editar/<int:usuario_id>/', views.editar_usuario, name='editar_usuario'),  
     path('eliminar/<int:usuario_id>/', views.eliminar_usuario, name='eliminar_usuario'),
     path('usuario/restablecer_contraseña/<int:usuario_id>/', restablecer_contraseña, name='restablecer_contraseña'),
+    path('registrar_usuario/', views.registrar_usuario, name='registrar_usuario'),
+    path('recuperar_contraseña/', views.recuperar_contraseña, name='recuperar_contraseña'),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -316,3 +316,48 @@ class CustomPasswordResetForm(forms.Form):
         return cleaned_data
     
     
+
+from django.contrib.auth.forms import UserCreationForm
+from .models import Usuario
+
+class CustomUserCreationForm(UserCreationForm):
+    class Meta:
+        model = Usuario
+        fields = ('username', 'email', 'password1', 'password2')
+class CustomPasswordResetForm(forms.Form):
+    nueva_contraseña = forms.CharField(
+        label="Nueva Contraseña",
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+    )
+    confirmar_contraseña = forms.CharField(
+        label="Confirmar Contraseña",
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        nueva_contraseña = cleaned_data.get("nueva_contraseña")
+        confirmar_contraseña = cleaned_data.get("confirmar_contraseña")
+
+        if nueva_contraseña != confirmar_contraseña:
+            raise forms.ValidationError("Las contraseñas no coinciden.")
+        return cleaned_data
+    
+class CustomPasswordResetForm(forms.Form):
+    nueva_contraseña = forms.CharField(
+        label="Nueva Contraseña",
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+    )
+    confirmar_contraseña = forms.CharField(
+        label="Confirmar Contraseña",
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        nueva_contraseña = cleaned_data.get("nueva_contraseña")
+        confirmar_contraseña = cleaned_data.get("confirmar_contraseña")
+
+        if nueva_contraseña != confirmar_contraseña:
+            raise forms.ValidationError("Las contraseñas no coinciden.")
+        return cleaned_data

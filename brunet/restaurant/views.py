@@ -209,7 +209,7 @@ def pedidos_eliminados(request):
 
 
 
-from django.http import JsonResponse
+
 from .models import Menu
 
 def obtener_precio_plato(request):
@@ -1338,7 +1338,6 @@ def generar_reporte(request):
 
 
 import plotly.express as px
-from django.http import JsonResponse
 from django.db.models import Sum
 from .models import TransaccionCaja
 
@@ -1451,3 +1450,58 @@ def restablecer_contraseña(request, usuario_id):
         form = CustomPasswordResetForm()
 
     return render(request, 'usuarios/restablecer_contraseña.html', {'form': form, 'usuario': usuario})
+
+from .forms import CustomUserCreationForm
+from .models import Usuario
+
+def registrar_usuario(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            # Crear usuario como inactivo
+            usuario = form.save(commit=False)
+            usuario.is_active = False  # El administrador debe activarlo
+            usuario.save()
+            messages.success(request, 'Tu cuenta ha sido creada. Un administrador la activará pronto.')
+            return redirect('login')
+        else:
+            messages.error(request, 'Error al registrar el usuario. Verifica los datos ingresados.')
+    else:
+        form = CustomUserCreationForm()
+
+    return render(request, 'usuarios/registrar_usuario.html', {'form': form})
+
+
+from .forms import CustomPasswordResetForm
+
+def recuperar_contraseña(request):
+    mostrar_nueva_contraseña = False  # Controla si se muestran los campos de nueva contraseña
+
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        
+        # Intentar encontrar al usuario con el username y correo proporcionados
+        try:
+            usuario = Usuario.objects.get(username=username, email=email)
+            
+            # Si ya se pasó la validación, mostrar el formulario de nueva contraseña
+            form = CustomPasswordResetForm(request.POST)
+            if 'nueva_contraseña' in request.POST and form.is_valid():
+                nueva_contraseña = form.cleaned_data['nueva_contraseña']
+                usuario.set_password(nueva_contraseña)
+                usuario.save()
+                
+                messages.success(request, 'Tu contraseña ha sido restablecida exitosamente.')
+                return redirect('login')
+            else:
+                mostrar_nueva_contraseña = True
+                messages.info(request, 'Por favor ingresa una nueva contraseña.')
+                
+        except Usuario.DoesNotExist:
+            messages.error(request, 'Los datos ingresados no son correctos.')
+            form = CustomPasswordResetForm()  # Formulario vacío para nueva contraseña
+    else:
+        form = CustomPasswordResetForm()
+
+    return render(request, 'usuarios/recuperar_contraseña.html', {'form': form, 'mostrar_nueva_contraseña': mostrar_nueva_contraseña})
