@@ -258,3 +258,61 @@ class ReporteFiltroForm(forms.Form):
         queryset=Usuario.objects.filter(tipo_usuario__in=['admin', 'cajero']),
         required=False, label="Filtrar por Usuario"
     )
+    
+
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from .models import Usuario
+
+class CustomUserCreationForm(UserCreationForm):
+    tipo_usuario = forms.ChoiceField(choices=Usuario.TIPO_USUARIO_CHOICES, label="Tipo de Usuario")
+    estado = forms.ChoiceField(choices=Usuario.ESTADO_CHOICES, label="Estado")
+
+    class Meta:
+        model = Usuario
+        fields = ('username', 'email', 'tipo_usuario', 'estado')
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.tipo_usuario = self.cleaned_data['tipo_usuario']
+        user.estado = self.cleaned_data['estado']
+        if commit:
+            user.save()
+        return user
+
+
+class CustomUserChangeForm(UserChangeForm):
+    tipo_usuario = forms.ChoiceField(choices=Usuario.TIPO_USUARIO_CHOICES, label="Tipo de Usuario")
+    estado = forms.ChoiceField(choices=Usuario.ESTADO_CHOICES, label="Estado")
+
+    class Meta:
+        model = Usuario
+        fields = ('username', 'email', 'tipo_usuario', 'estado')
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.tipo_usuario = self.cleaned_data['tipo_usuario']
+        user.estado = self.cleaned_data['estado']
+        if commit:
+            user.save()
+        return user
+    
+class CustomPasswordResetForm(forms.Form):
+    nueva_contraseña = forms.CharField(
+        label="Nueva Contraseña",
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+    )
+    confirmar_contraseña = forms.CharField(
+        label="Confirmar Contraseña",
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        nueva_contraseña = cleaned_data.get("nueva_contraseña")
+        confirmar_contraseña = cleaned_data.get("confirmar_contraseña")
+
+        if nueva_contraseña and confirmar_contraseña and nueva_contraseña != confirmar_contraseña:
+            raise forms.ValidationError("Las contraseñas no coinciden.")
+        return cleaned_data
+    
+    

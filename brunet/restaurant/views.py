@@ -1379,3 +1379,75 @@ def obtener_datos_grafico_metodos_pago(request):
 
 
 
+from django.contrib import messages
+from .models import Usuario
+from .forms import CustomUserCreationForm, CustomUserChangeForm
+from .models import Usuario
+
+
+@login_required
+def crear_usuario(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Usuario creado exitosamente.')
+            return redirect('listar_usuarios')
+        else:
+            messages.error(request, 'Error al crear el usuario. Verifique los datos ingresados.')
+    else:
+        form = CustomUserCreationForm()
+    return render(request, 'usuarios/crear_usuario.html', {'form': form})
+
+def listar_usuarios(request):
+    usuarios = Usuario.objects.all()
+    return render(request, 'usuarios/listar_usuarios.html', {'usuarios': usuarios})
+
+
+@login_required
+def editar_usuario(request, usuario_id):
+    usuario = get_object_or_404(Usuario, id=usuario_id)
+    if request.method == 'POST':
+        form = CustomUserChangeForm(request.POST, instance=usuario)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Usuario editado exitosamente.')
+            return redirect('listar_usuarios')
+    else:
+        form = CustomUserChangeForm(instance=usuario)
+    return render(request, 'usuarios/editar_usuario.html', {'form': form})
+
+@login_required
+def eliminar_usuario(request, usuario_id):
+    usuario = get_object_or_404(Usuario, id=usuario_id)
+    if request.method == 'POST':
+        usuario.delete()
+        messages.success(request, 'Usuario eliminado exitosamente.')
+        return redirect('listar_usuarios')
+    return render(request, 'usuarios/eliminar_usuario.html', {'usuario': usuario})
+
+
+
+from django.contrib.auth import update_session_auth_hash
+from .models import Usuario
+from .forms import CustomPasswordResetForm
+
+@login_required
+def restablecer_contraseña(request, usuario_id):
+    usuario = get_object_or_404(Usuario, id=usuario_id)
+    
+    if request.method == 'POST':
+        form = CustomPasswordResetForm(request.POST)
+        if form.is_valid():
+            nueva_contraseña = form.cleaned_data['nueva_contraseña']
+            usuario.set_password(nueva_contraseña)
+            usuario.save()
+            update_session_auth_hash(request, usuario)  # Mantener la sesión activa para el administrador si es necesario
+            messages.success(request, 'Contraseña restablecida exitosamente.')
+            return redirect('listar_usuarios')
+        else:
+            messages.error(request, 'Por favor corrija los errores en el formulario.')
+    else:
+        form = CustomPasswordResetForm()
+
+    return render(request, 'usuarios/restablecer_contraseña.html', {'form': form, 'usuario': usuario})

@@ -26,7 +26,7 @@ from .views import (
     eliminar_compra,
     obtener_precio_plato,
     marcar_servido,
-    crear_categoria, eliminar_categoria, listar_categorias, cocinero_dashboard, nuevos_pedidos
+    crear_categoria, eliminar_categoria, listar_categorias, cocinero_dashboard, nuevos_pedidos, restablecer_contraseña
 )
 
 urlpatterns =[
@@ -127,4 +127,12 @@ urlpatterns =[
     path('caja/pago/crear/', views.crear_pago, name='crear_pago'),
     path('caja/pago/modificar/<int:pago_id>/', views.modificar_pago, name='modificar_pago'),
     path('caja/pago/eliminar/<int:pago_id>/', views.eliminar_pago, name='eliminar_pago'),
+    
+    #Usuarios
+    path('crear/', views.crear_usuario, name='crear_usuario'),
+    path('listar/', views.listar_usuarios, name='listar_usuarios'),  
+    path('editar/<int:usuario_id>/', views.editar_usuario, name='editar_usuario'),  
+    path('eliminar/<int:usuario_id>/', views.eliminar_usuario, name='eliminar_usuario'),
+    path('usuario/restablecer_contraseña/<int:usuario_id>/', restablecer_contraseña, name='restablecer_contraseña'),
+    
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
