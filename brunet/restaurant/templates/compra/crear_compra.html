@@ -5,69 +5,147 @@
     <h1>Registrar Compra</h1>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        
+
         <!-- Formulario de compra -->
         <div class="form-group">
             <label for="id_proveedor">{{ form.proveedor.label }}</label>
             {{ form.proveedor }}
+            {% for error in form.proveedor.errors %}
+                <small class="text-danger">{{ error }}</small>
+            {% endfor %}
         </div>
+
         <div class="form-group">
             <label for="id_total">{{ form.total.label }}</label>
             {{ form.total }}
+            <small class="text-muted">* Este valor se calculará automáticamente</small>
+            {% for error in form.total.errors %}
+                <small class="text-danger">{{ error }}</small>
+            {% endfor %}
         </div>
+
         <div class="form-group">
             <label for="id_tiene_documentacion">{{ form.tiene_documentacion.label }}</label>
             {{ form.tiene_documentacion }}
         </div>
-        <div class="form-group" id="archivo-documentacion" style="display:none;">
+
+        <div class="form-group d-none" id="archivo-documentacion">
             <label for="id_archivo_documentacion">{{ form.archivo_documentacion.label }}</label>
             {{ form.archivo_documentacion }}
+            {% for error in form.archivo_documentacion.errors %}
+                <small class="text-danger">{{ error }}</small>
+            {% endfor %}
         </div>
+
         <div class="form-group">
             <label for="id_detalle">{{ form.detalle.label }}</label>
             {{ form.detalle }}
         </div>
 
         <h3>Detalles de la Compra</h3>
-        {{ detalle_formset.management_form }}
+{{ detalle_formset.management_form }}
 
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Inventario</th>
-                    <th>Cantidad</th>
-                    <th>Precio Unitario</th>
-                    <th>Eliminar</th>
+<table class="table table-bordered" id="detalle-table">
+    <thead>
+        <tr>
+            <th>Inventario</th>
+            <th>Cantidad</th>
+            <th>Precio Unitario</th>
+            <th>Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for form in detalle_formset %}
+        <tr>
+            <td>{{ form.inventario }}</td>
+            <td>{{ form.cantidad }}</td>
+            <td>{{ form.precio_unitario }}</td>
+            <td class="subtotal">
+                <input type="text" class="form-control" readonly value="0.00">
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h4>Total: $<span id="total-display">0.00</span></h4>
                 </tr>
-            </thead>
-            <tbody>
-                {% for form in detalle_formset %}
-                <tr>
-                    <td>{{ form.inventario }}</td>
-                    <td>{{ form.cantidad }}</td>
-                    <td>{{ form.precio_unitario }}</td>
-                    <td>{{ form.DELETE }}</td>
-                </tr>
-                {% endfor %}
             </tbody>
         </table>
-
         <button type="submit" class="btn btn-primary">Registrar Compra</button>
     </form>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
+        // Elementos necesarios
         const checkbox = document.getElementById('id_tiene_documentacion');
         const archivoField = document.getElementById('archivo-documentacion');
+        const detalleTable = document.getElementById('detalle-table');
+        const totalDisplay = document.getElementById('total-display');
+        const totalField = document.getElementById('id_total');
+        const addRowButton = document.getElementById('add-row'); // Botón para añadir filas
 
+        // Función para mostrar/ocultar el campo de archivo según el estado del checkbox
         function toggleArchivoField() {
-            archivoField.style.display = checkbox.checked ? 'block' : 'none';
+            archivoField.classList.toggle('d-none', !checkbox.checked);
         }
 
-        checkbox.addEventListener('change', toggleArchivoField);
-        toggleArchivoField();
+        // Función para calcular el subtotal y el total
+        function calcularTotales() {
+            let total = 0;
+
+            detalleTable.querySelectorAll('tbody tr').forEach(row => {
+                const cantidadInput = row.querySelector('[name$="cantidad"]');
+                const precioInput = row.querySelector('[name$="precio_unitario"]');
+                const subtotalInput = row.querySelector('.subtotal input');
+
+                if (cantidadInput && precioInput && subtotalInput) {
+                    const cantidad = parseFloat(cantidadInput.value) || 0;
+                    const precio = parseFloat(precioInput.value) || 0;
+                    const subtotal = cantidad * precio;
+
+                    // Actualizar el campo de subtotal
+                    subtotalInput.value = subtotal.toFixed(2);
+
+                    // Sumar al total general
+                    total += subtotal;
+                }
+            });
+
+            // Actualizar el total en pantalla y en el campo oculto
+            totalDisplay.textContent = total.toFixed(2);
+            totalField.value = total.toFixed(2);
+        }
+
+        // Función para añadir una nueva fila de detalle
+        function addRow() {
+            const tableBody = detalleTable.querySelector('tbody');
+            const firstRow = tableBody.querySelector('tr'); // Usamos la primera fila como plantilla
+            const newRow = firstRow.cloneNode(true);
+
+            // Limpiar valores de los campos en la nueva fila
+            newRow.querySelectorAll('input').forEach(input => input.value = '');
+            newRow.querySelector('select').selectedIndex = 0; // Resetear el select si existe
+            newRow.querySelector('.subtotal input').value = '0.00';
+
+            tableBody.appendChild(newRow);
+        }
+
+        // Eventos
+        checkbox.addEventListener('change', toggleArchivoField); // Cambiar visibilidad del archivo
+        detalleTable.addEventListener('input', function (event) {
+            if (event.target.name.endsWith('cantidad') || event.target.name.endsWith('precio_unitario')) {
+                calcularTotales();
+            }
+        }); // Recalcular total cuando cambian cantidad o precio
+        addRowButton.addEventListener('click', addRow); // Añadir nuevas filas
+
+        // Inicialización
+        toggleArchivoField(); // Configurar visibilidad inicial del archivo
+        calcularTotales(); // Calcular totales iniciales si hay datos precargados
     });
 </script>
+
 
 {% endblock %}

@@ -94,7 +94,7 @@ class CompraForm(forms.ModelForm):
         fields = ['proveedor', 'total', 'tiene_documentacion', 'archivo_documentacion', 'detalle']
         widgets = {
             'proveedor': forms.Select(attrs={'class': 'form-control'}),
-            'total': forms.NumberInput(attrs={'class': 'form-control'}),
+            'total': forms.NumberInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             'tiene_documentacion': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'archivo_documentacion': forms.ClearableFileInput(attrs={'class': 'form-control'}),
             'detalle': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),

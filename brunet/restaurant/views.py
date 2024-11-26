@@ -458,39 +458,44 @@ def eliminar_proveedor(request, pk):
 # Compras
 
 
+
+from django.db import transaction
 from django.forms import inlineformset_factory
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 from .models import Compra, DetalleCompra
 from .forms import CompraForm, DetalleCompraForm
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-
-from django.forms import inlineformset_factory
-from .models import Compra, DetalleCompra, Inventario
-from .forms import CompraForm, DetalleCompraForm
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
 
 @login_required
 def crear_compra(request):
-    DetalleCompraFormSet = inlineformset_factory(Compra, DetalleCompra, form=DetalleCompraForm, extra=1, can_delete=True)
+    DetalleCompraFormSet = inlineformset_factory(
+        Compra, DetalleCompra, form=DetalleCompraForm, extra=1, can_delete=True
+    )
 
     if request.method == 'POST':
         form = CompraForm(request.POST, request.FILES)
-        detalle_formset = DetalleCompraFormSet(request.POST)  
+        detalle_formset = DetalleCompraFormSet(request.POST)
 
         if form.is_valid() and detalle_formset.is_valid():
-            compra = form.save()  
-            detalle_formset.instance = compra  
-            detalle_formset.save()
+            with transaction.atomic():
+                # Guardar la compra
+                compra = form.save()
 
-            # Actualizar el inventario
-            for detalle in detalle_formset.cleaned_data:
-                inventario_item = detalle['inventario']
-                cantidad_comprada = detalle['cantidad']
-                
-                # Aumentar la cantidad en el inventario
-                inventario_item.cantidad_actual += cantidad_comprada
-                inventario_item.save()
+                # Asociar la compra con el formset y guardar los detalles
+                detalle_formset.instance = compra
+                detalle_formset.save()  # Esto guarda todos los detalles vinculados con la compra
+
+                # Actualizar el inventario para cada detalle
+                for detalle in detalle_formset.save(commit=False):
+                    inventario_item = detalle.inventario
+                    cantidad_comprada = detalle.cantidad
+
+                    if inventario_item and cantidad_comprada:
+                        inventario_item.cantidad_actual += cantidad_comprada
+                        inventario_item.save()
+
+                # Actualizar el total de la compra
+                compra.calcular_total()
 
             return redirect('compras')
     else:
@@ -499,9 +504,8 @@ def crear_compra(request):
 
     return render(request, 'compra/crear_compra.html', {
         'form': form,
-        'detalle_formset': detalle_formset
+        'detalle_formset': detalle_formset,
     })
-
 
 @login_required
 def compras(request):
@@ -514,16 +518,47 @@ def compras(request):
 def editar_compra(request, pk):
     compra = get_object_or_404(Compra, pk=pk)
 
-    # Crear el formset para manejar DetalleCompra asociado a esta compra
-    DetalleCompraFormSet = inlineformset_factory(Compra, DetalleCompra, form=DetalleCompraForm, extra=1, can_delete=True)
+    DetalleCompraFormSet = inlineformset_factory(
+        Compra, DetalleCompra, form=DetalleCompraForm, extra=1, can_delete=True
+    )
 
     if request.method == 'POST':
         form = CompraForm(request.POST, request.FILES, instance=compra)
         detalle_formset = DetalleCompraFormSet(request.POST, instance=compra)
 
         if form.is_valid() and detalle_formset.is_valid():
-            form.save()  # Guardamos la compra editada
-            detalle_formset.save()  # Guardamos los detalles de la compra
+            with transaction.atomic():
+                # Guardamos la compra editada
+                compra = form.save()
+
+                # Procesamos los detalles antes de guardar para manejar el inventario
+                for detalle_form in detalle_formset:
+                    if detalle_form.cleaned_data.get('DELETE'):
+                        # Si el detalle será eliminado, restamos la cantidad del inventario
+                        detalle = detalle_form.instance
+                        if detalle.pk and detalle.inventario:
+                            detalle.inventario.cantidad_actual -= detalle.cantidad
+                            detalle.inventario.save()
+                    else:
+                        # Si es un detalle existente, calculamos la diferencia en la cantidad
+                        detalle = detalle_form.instance
+                        if detalle.pk and detalle.inventario:
+                            cantidad_anterior = DetalleCompra.objects.get(pk=detalle.pk).cantidad
+                            diferencia = detalle.cantidad - cantidad_anterior
+                            detalle.inventario.cantidad_actual += diferencia
+                            detalle.inventario.save()
+                        elif detalle_form.cleaned_data.get('inventario'):
+                            # Si es un detalle nuevo, aumentamos directamente la cantidad en el inventario
+                            inventario_item = detalle_form.cleaned_data['inventario']
+                            inventario_item.cantidad_actual += detalle_form.cleaned_data['cantidad']
+                            inventario_item.save()
+
+                # Guardamos los cambios en los detalles
+                detalle_formset.save()
+
+                # Recalculamos el total de la compra
+                compra.calcular_total()
+
             return redirect('compras')
     else:
         form = CompraForm(instance=compra)
@@ -531,7 +566,7 @@ def editar_compra(request, pk):
 
     return render(request, 'compra/editar_compra.html', {
         'form': form,
-        'detalle_formset': detalle_formset
+        'detalle_formset': detalle_formset,
     })
     
 @login_required

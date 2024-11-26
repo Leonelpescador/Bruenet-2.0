@@ -253,26 +253,40 @@ class Proveedor(models.Model):
         super(Proveedor, self).save(*args, **kwargs)
 
 
+
 class Compra(models.Model):
-    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)
-    total = models.DecimalField(max_digits=10, decimal_places=2)
-    tiene_documentacion = models.BooleanField(default=False)
-    archivo_documentacion = models.FileField(upload_to='documentos/', blank=True, null=True)
-    detalle = models.TextField(blank=True, null=True)
-    fecha_compra = models.DateField(auto_now_add=True)
+    proveedor = models.ForeignKey(Proveedor, on_delete=models.CASCADE)  # Relación con Proveedor
+    total = models.DecimalField(max_digits=10, decimal_places=2)  # Total de la compra
+    tiene_documentacion = models.BooleanField(default=False)  # ¿La compra incluye documentación?
+    archivo_documentacion = models.FileField(
+        upload_to='documentos/', blank=True, null=True
+    )  # Archivo adjunto opcional
+    detalle = models.TextField(blank=True, null=True)  # Detalles adicionales de la compra
+    fecha_compra = models.DateField(auto_now_add=True)  # Fecha automática de creación
+
+    def calcular_total(self):
+        """Calcula el total de la compra sumando los subtotales de los detalles."""
+        total = sum(detalle.subtotal for detalle in self.detallecompra_set.all())
+        self.total = total
+        self.save()
 
     def __str__(self):
         return f"Compra de {self.proveedor.nombre_proveedor} por ${self.total}"
+
 class DetalleCompra(models.Model):
-    compra = models.ForeignKey(Compra, on_delete=models.CASCADE)
-    inventario = models.ForeignKey(Inventario, on_delete=models.CASCADE)
-    cantidad = models.IntegerField()
-    precio_unitario = models.DecimalField(max_digits=6, decimal_places=2)
-    subtotal = models.DecimalField(max_digits=8, decimal_places=2)
+    compra = models.ForeignKey(Compra, on_delete=models.CASCADE)  # Relación con la compra
+    inventario = models.ForeignKey(Inventario, on_delete=models.CASCADE)  # Producto del inventario
+    cantidad = models.IntegerField()  # Cantidad comprada
+    precio_unitario = models.DecimalField(max_digits=6, decimal_places=2)  # Precio unitario
+    subtotal = models.DecimalField(max_digits=8, decimal_places=2, editable=False)  # Subtotal (calculado)
 
     def save(self, *args, **kwargs):
+        """Calcula el subtotal antes de guardar."""
         self.subtotal = self.cantidad * self.precio_unitario
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.inventario.nombre} x {self.cantidad} (${self.subtotal})"
 
 from django.db import models
 from django.utils import timezone
